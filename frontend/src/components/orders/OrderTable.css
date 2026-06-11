@@ -43,3 +43,46 @@
   font-size: 14px;
   color: #212529;
 }
+
+/* Loading state */
+.loading-message {
+  padding: 48px 24px;
+  text-align: center;
+  font-size: 16px;
+  color: #6c757d;
+}
+
+/* Error state */
+.error-message {
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.error-message p {
+  color: #dc3545;
+  margin-bottom: 16px;
+  font-size: 16px;
+}
+
+.retry-button {
+  padding: 10px 20px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.retry-button:hover {
+  background: #0056b3;
+}
+
+/* Empty state */
+.empty-message {
+  padding: 48px 24px;
+  text-align: center;
+  font-size: 16px;
+  color: #6c757d;
+}
