@@ -13,12 +13,12 @@ const Navigation = () => {
     <nav className="navigation">
       <div className="nav-container">
         <div className="nav-brand">
-          <Link to="/">Order Processing System</Link>
+          <Link to="/dashboard">Order Processing System</Link>
         </div>
         <ul className="nav-links">
           <li>
-            <Link to="/" className={isActive('/')}>
-              Home
+            <Link to="/dashboard" className={isActive('/dashboard')}>
+              Dashboard
             </Link>
           </li>
           <li>
