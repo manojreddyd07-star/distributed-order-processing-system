@@ -4,6 +4,7 @@ import com.project.order.dto.CreateOrderRequest;
 import com.project.order.dto.OrderResponse;
 import com.project.order.entity.OrderEntity;
 import com.project.order.repository.OrderRepository;
+import com.project.order.service.KafkaProducerService;
 import com.project.order.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,10 +17,12 @@ import java.util.stream.Collectors;
 public class OrderServiceImpl implements OrderService {
     
     private final OrderRepository orderRepository;
+    private final KafkaProducerService kafkaProducerService;
     
     @Autowired
-    public OrderServiceImpl(OrderRepository orderRepository) {
+    public OrderServiceImpl(OrderRepository orderRepository, KafkaProducerService kafkaProducerService) {
         this.orderRepository = orderRepository;
+        this.kafkaProducerService = kafkaProducerService;
     }
     
     @Override
@@ -37,6 +40,9 @@ public class OrderServiceImpl implements OrderService {
         
         // Save order using OrderRepository
         OrderEntity savedOrder = orderRepository.save(orderEntity);
+        
+        // Publish order created event to Kafka
+        kafkaProducerService.publishOrderCreatedEvent(savedOrder);
         
         // Map OrderEntity to OrderResponse
         return mapToOrderResponse(savedOrder);

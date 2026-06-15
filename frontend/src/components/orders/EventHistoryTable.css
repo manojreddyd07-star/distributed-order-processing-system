@@ -1,0 +1,114 @@
+.event-history-table-container {
+  width: 100%;
+  overflow-x: auto;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
+
+.event-history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.event-history-table thead {
+  background-color: #f8f9fa;
+}
+
+.event-history-table th {
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  color: #495057;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.event-history-table td {
+  padding: 12px;
+  border-bottom: 1px solid #dee2e6;
+  color: #212529;
+}
+
+.event-history-table tbody tr:hover {
+  background-color: #f8f9fa;
+  cursor: pointer;
+}
+
+.event-id {
+  font-family: monospace;
+  font-size: 12px;
+  color: #6c757d;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.event-type-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.event-type-badge.order_created {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+.event-type-badge.order_validated {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.event-type-badge.payment_processed {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.event-type-badge.order_fulfilled {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.order-id {
+  font-weight: 600;
+  color: #007bff;
+}
+
+.event-timestamp {
+  color: #6c757d;
+  font-size: 13px;
+}
+
+.event-history-loading,
+.event-history-empty {
+  padding: 40px;
+  text-align: center;
+  color: #6c757d;
+  font-size: 14px;
+}
+
+.event-history-loading p,
+.event-history-empty p {
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .event-history-table {
+    font-size: 12px;
+  }
+
+  .event-history-table th,
+  .event-history-table td {
+    padding: 8px;
+  }
+
+  .event-id {
+    max-width: 100px;
+  }
+}
