@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Navigation from './components/Navigation/Navigation';
 import DashboardPage from './pages/Dashboard/DashboardPage';
 import OrdersPage from './pages/Orders/OrdersPage';
+import ValidationPage from './pages/Validation/ValidationPage';
 import './App.css';
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/orders" element={<OrdersPage />} />
+            <Route path="/validations" element={<ValidationPage />} />
           </Routes>
         </main>
       </div>

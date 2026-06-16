@@ -1,0 +1,20 @@
+.validation-page {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.validation-page-header {
+  margin-bottom: 2rem;
+}
+
+.validation-page-header h1 {
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.validation-page-header p {
+  color: #666;
+  font-size: 1rem;
+}
