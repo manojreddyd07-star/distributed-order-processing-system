@@ -2,6 +2,7 @@ package com.project.validation.service;
 
 import com.project.validation.entity.ValidationEntity;
 import com.project.validation.event.OrderCreatedEvent;
+import com.project.validation.event.ValidationEventProducer;
 import com.project.validation.repository.ValidationRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,10 +19,13 @@ public class ValidationService {
     private static final Logger logger = LoggerFactory.getLogger(ValidationService.class);
     
     private final ValidationRepository validationRepository;
+    private final ValidationEventProducer validationEventProducer;
     
     @Autowired
-    public ValidationService(ValidationRepository validationRepository) {
+    public ValidationService(ValidationRepository validationRepository,
+                           ValidationEventProducer validationEventProducer) {
         this.validationRepository = validationRepository;
+        this.validationEventProducer = validationEventProducer;
     }
     
     /**
@@ -60,7 +64,6 @@ public class ValidationService {
             // Validation passed
             validationResult = new ValidationEntity(
                 event.getOrderId(),
-                event.getCustomerId(),
                 "VALID",
                 "Order validation successful"
             );
@@ -70,7 +73,6 @@ public class ValidationService {
             String errorMessage = String.join("; ", validationErrors);
             validationResult = new ValidationEntity(
                 event.getOrderId(),
-                event.getCustomerId(),
                 "INVALID",
                 errorMessage
             );
@@ -82,6 +84,25 @@ public class ValidationService {
         ValidationEntity savedResult = validationRepository.save(validationResult);
         logger.info("Validation result saved for order ID: {} with status: {}", 
                    event.getOrderId(), savedResult.getValidationStatus());
+        
+        // Publish Kafka events based on validation result
+        if (validationErrors.isEmpty()) {
+            // Publish validation success event
+            validationEventProducer.publishValidationSuccessEvent(
+                savedResult.getOrderId(),
+                savedResult.getValidationStatus(),
+                savedResult.getValidationMessage()
+            );
+            logger.info("Published validation success event for order ID: {}", savedResult.getOrderId());
+        } else {
+            // Publish validation failure event
+            validationEventProducer.publishValidationFailedEvent(
+                savedResult.getOrderId(),
+                savedResult.getValidationStatus(),
+                savedResult.getValidationMessage()
+            );
+            logger.error("Published validation failure event for order ID: {}", savedResult.getOrderId());
+        }
         
         return savedResult;
     }

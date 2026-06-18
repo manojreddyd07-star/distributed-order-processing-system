@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ValidationStatusBadge from './ValidationStatusBadge';
+import { getValidationHistory } from '../../services/validationApi';
 import './ValidationTable.css';
 
 const ValidationTable = ({ refreshTrigger }) => {
@@ -7,8 +8,6 @@ const ValidationTable = ({ refreshTrigger }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Mock data for initial development
-  // TODO: Replace with actual API call to validation-service
   useEffect(() => {
     fetchValidations();
   }, [refreshTrigger]);
@@ -18,43 +17,11 @@ const ValidationTable = ({ refreshTrigger }) => {
     setError(null);
     
     try {
-      // Fetch from validation-service API
-      const response = await fetch('http://localhost:8081/api/validations');
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch validations');
-      }
-      
-      const data = await response.json();
+      const data = await getValidationHistory();
       setValidations(data);
     } catch (err) {
       setError(err.message || 'Failed to load validations');
-      
-      // Fallback to mock data for development
-      const mockData = [
-        {
-          id: 1,
-          orderId: 101,
-          validationStatus: 'VALIDATED',
-          validationMessage: 'Order validated successfully',
-          validatedAt: '2024-01-15T10:30:00'
-        },
-        {
-          id: 2,
-          orderId: 102,
-          validationStatus: 'FAILED',
-          validationMessage: 'Invalid customer ID',
-          validatedAt: '2024-01-15T10:31:00'
-        },
-        {
-          id: 3,
-          orderId: 103,
-          validationStatus: 'VALIDATED',
-          validationMessage: 'Order validated successfully',
-          validatedAt: '2024-01-15T10:32:00'
-        }
-      ];
-      setValidations(mockData);
+      console.error('Error fetching validations:', err);
     } finally {
       setIsLoading(false);
     }
@@ -107,6 +74,11 @@ const ValidationTable = ({ refreshTrigger }) => {
   // Validations table
   return (
     <div className="validation-table-container">
+      <div className="table-actions">
+        <button onClick={fetchValidations} className="refresh-button">
+          Refresh
+        </button>
+      </div>
       <table className="validation-table">
         <thead>
           <tr>
