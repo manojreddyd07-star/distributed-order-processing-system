@@ -31,6 +31,11 @@ const Navigation = () => {
               Validations
             </Link>
           </li>
+          <li>
+            <Link to="/payments" className={isActive('/payments')}>
+              Payments
+            </Link>
+          </li>
         </ul>
       </div>
     </nav>

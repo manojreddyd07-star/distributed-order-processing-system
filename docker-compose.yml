@@ -41,6 +41,26 @@ services:
       timeout: 5s
       retries: 5
 
+  # PostgreSQL Database for Payment Service
+  postgres-payment:
+    image: postgres:15-alpine
+    container_name: paymentdb
+    environment:
+      POSTGRES_DB: paymentdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_payment_data:/var/lib/postgresql/data
+    networks:
+      - order-processing-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   # Zookeeper Service
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
@@ -110,8 +130,7 @@ services:
     restart: unless-stopped
 
   # Validation Service
-  validation-ser
-  postgres_validation_data:vice:
+  validation-service:
     build:
       context: ./backend/validation-service
       dockerfile: Dockerfile
@@ -132,8 +151,33 @@ services:
       - order-processing-network
     restart: unless-stopped
 
+  # Payment Service
+  payment-service:
+    build:
+      context: ./backend/payment-service
+      dockerfile: Dockerfile
+    container_name: payment-service
+    depends_on:
+      postgres-payment:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    ports:
+      - "8082:8082"
+    environment:
+      DB_URL: jdbc:postgresql://postgres-payment:5432/paymentdb
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SERVER_PORT: 8082
+    networks:
+      - order-processing-network
+    restart: unless-stopped
+
 volumes:
   postgres_data:
+  postgres_validation_data:
+  postgres_payment_data:
 
 networks:
   order-processing-network:

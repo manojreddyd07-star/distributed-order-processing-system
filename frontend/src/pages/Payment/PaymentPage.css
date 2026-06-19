@@ -1,0 +1,20 @@
+.payment-page {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.payment-page-header {
+  margin-bottom: 2rem;
+}
+
+.payment-page-header h1 {
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.payment-page-header p {
+  color: #666;
+  font-size: 1rem;
+}

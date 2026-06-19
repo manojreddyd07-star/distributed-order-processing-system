@@ -4,6 +4,7 @@ import Navigation from './components/Navigation/Navigation';
 import DashboardPage from './pages/Dashboard/DashboardPage';
 import OrdersPage from './pages/Orders/OrdersPage';
 import ValidationPage from './pages/Validation/ValidationPage';
+import PaymentPage from './pages/Payment/PaymentPage';
 import './App.css';
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/orders" element={<OrdersPage />} />
             <Route path="/validations" element={<ValidationPage />} />
+            <Route path="/payments" element={<PaymentPage />} />
           </Routes>
         </main>
       </div>
