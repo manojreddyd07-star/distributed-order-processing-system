@@ -1,0 +1,192 @@
+.payment-detail-panel {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 25px;
+  height: 100%;
+  min-height: 400px;
+}
+
+.no-selection {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #6c757d;
+  font-size: 1rem;
+}
+
+.no-selection p {
+  margin: 0;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 20px;
+  margin-bottom: 25px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.panel-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #333;
+  font-weight: 600;
+}
+
+.panel-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  border-left: 4px solid #007bff;
+}
+
+.detail-label {
+  font-weight: 600;
+  color: #495057;
+  font-size: 0.95rem;
+  min-width: 140px;
+}
+
+.detail-value {
+  flex: 1;
+  text-align: right;
+  color: #212529;
+  font-size: 1rem;
+  word-wrap: break-word;
+}
+
+.payment-id-value {
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+  color: #007bff;
+  font-size: 1.1rem;
+}
+
+.order-id-value {
+  font-weight: 600;
+  color: #495057;
+  font-size: 1.05rem;
+}
+
+.amount-value {
+  font-weight: 700;
+  color: #28a745;
+  font-size: 1.3rem;
+}
+
+.status-text {
+  font-weight: 600;
+  font-size: 1rem;
+  text-transform: uppercase;
+}
+
+.created-date-value {
+  color: #6c757d;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* Additional Information Section */
+.additional-info {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 2px solid #e0e0e0;
+}
+
+.additional-info h3 {
+  margin: 0 0 15px 0;
+  font-size: 1.2rem;
+  color: #333;
+  font-weight: 600;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 15px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+}
+
+.info-label {
+  font-weight: 500;
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.info-value {
+  font-weight: 600;
+  color: #495057;
+  font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .payment-detail-panel {
+    padding: 15px;
+  }
+
+  .panel-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .detail-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .detail-label {
+    min-width: auto;
+  }
+
+  .detail-value {
+    text-align: left;
+  }
+
+  .amount-value {
+    font-size: 1.1rem;
+  }
+
+  .payment-id-value {
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .panel-header h2 {
+    font-size: 1.2rem;
+  }
+
+  .detail-row {
+    padding: 10px;
+  }
+
+  .detail-label,
+  .detail-value {
+    font-size: 0.9rem;
+  }
+
+  .amount-value {
+    font-size: 1rem;
+  }
+}
