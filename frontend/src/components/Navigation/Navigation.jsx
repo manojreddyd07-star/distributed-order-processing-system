@@ -36,6 +36,11 @@ const Navigation = () => {
               Payments
             </Link>
           </li>
+          <li>
+            <Link to="/inventory" className={isActive('/inventory')}>
+              Inventory
+            </Link>
+          </li>
         </ul>
       </div>
     </nav>

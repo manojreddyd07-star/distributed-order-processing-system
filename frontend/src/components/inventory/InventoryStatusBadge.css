@@ -1,0 +1,33 @@
+.inventory-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  display: inline-block;
+}
+
+.status-available {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.status-low-stock {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.status-out-of-stock {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.status-reserved {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+.status-default {
+  background-color: #e2e3e5;
+  color: #383d41;
+}

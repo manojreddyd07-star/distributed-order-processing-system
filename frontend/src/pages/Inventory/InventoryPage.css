@@ -1,0 +1,21 @@
+.inventory-page {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.inventory-page-header {
+  margin-bottom: 30px;
+}
+
+.inventory-page-header h1 {
+  font-size: 32px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 8px;
+}
+
+.inventory-page-header p {
+  font-size: 16px;
+  color: #666;
+}
