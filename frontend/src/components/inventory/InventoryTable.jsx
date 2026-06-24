@@ -1,8 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import InventoryStatusBadge from './InventoryStatusBadge';
+import InventoryDetailsPanel from './InventoryDetailsPanel';
 import './InventoryTable.css';
 
 const InventoryTable = ({ inventory, loading }) => {
+  const [selectedInventory, setSelectedInventory] = useState(null);
+
+  // Handle row click to show details
+  const handleRowClick = (item) => {
+    setSelectedInventory(item);
+  };
+
+  // Close details panel
+  const handleCloseDetails = () => {
+    setSelectedInventory(null);
+  };
+
   // Loading state
   if (loading) {
     return (
@@ -23,34 +36,51 @@ const InventoryTable = ({ inventory, loading }) => {
 
   // Inventory table
   return (
-    <div className="inventory-table-container">
-      <div className="table-actions">
-        <span className="inventory-count">{inventory.length} product(s)</span>
-      </div>
-      
-      <table className="inventory-table">
-        <thead>
-          <tr>
-            <th>Product ID</th>
-            <th>Product Name</th>
-            <th>Available Quantity</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {inventory.map((item) => (
-            <tr key={item.id}>
-              <td className="product-id">{item.productId}</td>
-              <td className="product-name">{item.productName}</td>
-              <td className="available-quantity">{item.availableQuantity}</td>
-              <td className="status">
-                <InventoryStatusBadge status={item.inventoryStatus} />
-              </td>
+    <>
+      <div className="inventory-table-container">
+        <div className="table-actions">
+          <span className="inventory-count">{inventory.length} product(s)</span>
+        </div>
+        
+        <table className="inventory-table">
+          <thead>
+            <tr>
+              <th>Product ID</th>
+              <th>Product Name</th>
+              <th>Available Quantity</th>
+              <th>Reserved Quantity</th>
+              <th>Total Quantity</th>
+              <th>Status</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {inventory.map((item) => (
+              <tr 
+                key={item.id} 
+                onClick={() => handleRowClick(item)}
+                className="inventory-row"
+              >
+                <td className="product-id">{item.productId}</td>
+                <td className="product-name">{item.productName}</td>
+                <td className="available-quantity">{item.availableQuantity}</td>
+                <td className="reserved-quantity">{item.reservedQuantity}</td>
+                <td className="total-quantity">{item.totalQuantity}</td>
+                <td className="status">
+                  <InventoryStatusBadge status={item.status} />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {selectedInventory && (
+        <InventoryDetailsPanel 
+          inventory={selectedInventory} 
+          onClose={handleCloseDetails} 
+        />
+      )}
+    </>
   );
 };
 

@@ -43,8 +43,12 @@
   transition: background-color 0.2s;
 }
 
-.inventory-table tbody tr:hover {
-  background-color: #f8f9fa;
+.inventory-table tbody tr.inventory-row {
+  cursor: pointer;
+}
+
+.inventory-table tbody tr.inventory-row:hover {
+  background-color: #e3f2fd;
 }
 
 .inventory-table tbody tr:last-child {
@@ -68,10 +72,20 @@
   color: #212529;
 }
 
-.available-quantity {
+.available-quantity,
+.reserved-quantity,
+.total-quantity {
   font-weight: 600;
   color: #6c757d;
   text-align: center;
+}
+
+.reserved-quantity {
+  color: #fd7e14;
+}
+
+.total-quantity {
+  color: #20c997;
 }
 
 .loading-message,

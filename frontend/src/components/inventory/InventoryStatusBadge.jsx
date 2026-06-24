@@ -4,6 +4,7 @@ import './InventoryStatusBadge.css';
 const InventoryStatusBadge = ({ status }) => {
   const getStatusClass = () => {
     switch (status?.toUpperCase()) {
+      case 'IN_STOCK':
       case 'AVAILABLE':
         return 'inventory-badge status-available';
       case 'LOW_STOCK':
@@ -17,9 +18,14 @@ const InventoryStatusBadge = ({ status }) => {
     }
   };
 
+  const formatStatus = (status) => {
+    if (!status) return 'UNKNOWN';
+    return status.replace(/_/g, ' ');
+  };
+
   return (
     <span className={getStatusClass()}>
-      {status || 'UNKNOWN'}
+      {formatStatus(status)}
     </span>
   );
 };
