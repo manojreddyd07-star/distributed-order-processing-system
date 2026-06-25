@@ -52,7 +52,8 @@ public class InventoryConsumer {
                 inventoryService.reserveInventory(
                     event.getProductId(),
                     event.getProductName(),
-                    event.getQuantity()
+                    event.getQuantity(),
+                    event.getOrderId()
                 );
                 
                 logger.info("Inventory reservation completed for order ID: {}", event.getOrderId());

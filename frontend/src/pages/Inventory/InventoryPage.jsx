@@ -8,6 +8,13 @@ const InventoryPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState('ALL');
+  const [notification, setNotification] = useState(null);
+
+  // Show notification
+  const showNotification = (message, type = 'success') => {
+    setNotification({ message, type });
+    setTimeout(() => setNotification(null), 4000);
+  };
 
   // Fetch inventory data from API
   const fetchInventory = async () => {
@@ -17,11 +24,26 @@ const InventoryPage = () => {
     try {
       const data = await getAllInventory();
       setInventory(data);
+      showNotification('✅ Inventory data loaded successfully', 'success');
     } catch (err) {
       console.error('Error fetching inventory:', err);
-      setError('Failed to load inventory data. Please try again.');
+      const errorMsg = 'Failed to load inventory data. Please try again.';
+      setError(errorMsg);
+      showNotification('❌ ' + errorMsg, 'error');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Handle manual refresh
+  const handleRefresh = async () => {
+    try {
+      const data = await getAllInventory();
+      setInventory(data);
+      showNotification('✅ Inventory data refreshed successfully', 'success');
+    } catch (err) {
+      console.error('Error refreshing inventory:', err);
+      showNotification('❌ Failed to refresh inventory data', 'error');
     }
   };
 
@@ -40,6 +62,12 @@ const InventoryPage = () => {
         <h1>Inventory</h1>
         <p>Manage and view product inventory levels</p>
       </div>
+
+      {notification && (
+        <div className={`notification ${notification.type}`}>
+          {notification.message}
+        </div>
+      )}
 
       {error && (
         <div className="error-message">
@@ -62,7 +90,11 @@ const InventoryPage = () => {
         </select>
       </div>
 
-      <InventoryTable inventory={filteredInventory} loading={loading} />
+      <InventoryTable 
+        inventory={filteredInventory} 
+        loading={loading}
+        onRefresh={handleRefresh}
+      />
     </div>
   );
 };

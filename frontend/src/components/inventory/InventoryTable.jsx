@@ -3,8 +3,9 @@ import InventoryStatusBadge from './InventoryStatusBadge';
 import InventoryDetailsPanel from './InventoryDetailsPanel';
 import './InventoryTable.css';
 
-const InventoryTable = ({ inventory, loading }) => {
+const InventoryTable = ({ inventory, loading, onRefresh }) => {
   const [selectedInventory, setSelectedInventory] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   // Handle row click to show details
   const handleRowClick = (item) => {
@@ -14,6 +15,18 @@ const InventoryTable = ({ inventory, loading }) => {
   // Close details panel
   const handleCloseDetails = () => {
     setSelectedInventory(null);
+  };
+
+  // Handle refresh button click
+  const handleRefresh = async () => {
+    if (onRefresh) {
+      setRefreshing(true);
+      try {
+        await onRefresh();
+      } finally {
+        setRefreshing(false);
+      }
+    }
   };
 
   // Loading state
@@ -40,6 +53,13 @@ const InventoryTable = ({ inventory, loading }) => {
       <div className="inventory-table-container">
         <div className="table-actions">
           <span className="inventory-count">{inventory.length} product(s)</span>
+          <button 
+            className="refresh-button" 
+            onClick={handleRefresh}
+            disabled={loading || refreshing}
+          >
+            {refreshing ? '🔄 Refreshing...' : '🔄 Refresh'}
+          </button>
         </div>
         
         <table className="inventory-table">

@@ -1,6 +1,9 @@
 package com.project.inventory.service;
 
 import com.project.inventory.entity.InventoryEntity;
+import com.project.inventory.event.InventoryReservedEvent;
+import com.project.inventory.event.InventoryRejectedEvent;
+import com.project.inventory.producer.InventoryEventProducer;
 import com.project.inventory.repository.InventoryRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,7 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class InventoryService {
@@ -19,10 +24,13 @@ public class InventoryService {
     private static final String STATUS_OUT_OF_STOCK = "OUT_OF_STOCK";
     
     private final InventoryRepository inventoryRepository;
+    private final InventoryEventProducer inventoryEventProducer;
     
     @Autowired
-    public InventoryService(InventoryRepository inventoryRepository) {
+    public InventoryService(InventoryRepository inventoryRepository, 
+                          InventoryEventProducer inventoryEventProducer) {
         this.inventoryRepository = inventoryRepository;
+        this.inventoryEventProducer = inventoryEventProducer;
     }
     
     /**
@@ -60,12 +68,13 @@ public class InventoryService {
      * @param productId The product ID
      * @param productName The product name
      * @param quantity The quantity to reserve
+     * @param orderId The order ID
      * @return InventoryEntity representing the updated inventory
      */
     @Transactional
-    public InventoryEntity reserveInventory(String productId, String productName, Integer quantity) {
-        logger.info("Reserving inventory - Product ID: {}, Product Name: {}, Quantity: {}", 
-                   productId, productName, quantity);
+    public InventoryEntity reserveInventory(String productId, String productName, Integer quantity, Long orderId) {
+        logger.info("Reserving inventory - Product ID: {}, Product Name: {}, Quantity: {}, Order ID: {}", 
+                   productId, productName, quantity, orderId);
         
         // Find existing inventory or create new one
         InventoryEntity inventory = inventoryRepository.findByProductId(productId)
@@ -89,6 +98,11 @@ public class InventoryService {
         if (currentAvailable < quantity) {
             logger.error("Insufficient inventory - Product: {}, Available: {}, Requested: {}", 
                         productId, currentAvailable, quantity);
+            
+            // Publish InventoryRejectedEvent
+            publishInventoryRejectedEvent(productId, orderId, currentAvailable, currentReserved, 
+                                         inventory.getStatus(), "Insufficient inventory");
+            
             throw new RuntimeException("Insufficient inventory for product: " + productId);
         }
         
@@ -102,9 +116,13 @@ public class InventoryService {
         // Persist the updated inventory
         InventoryEntity updatedInventory = inventoryRepository.save(inventory);
         
-        logger.info("Inventory reserved successfully - Product: {}, New Available: {}, New Reserved: {}, Status: {}", 
-                   productId, updatedInventory.getAvailableQuantity(), 
+        logger.info("✅ Inventory reserved successfully - Product: {}, Order: {}, New Available: {}, New Reserved: {}, Status: {}", 
+                   productId, orderId, updatedInventory.getAvailableQuantity(), 
                    updatedInventory.getReservedQuantity(), updatedInventory.getStatus());
+        
+        // Publish InventoryReservedEvent
+        publishInventoryReservedEvent(productId, orderId, updatedInventory.getAvailableQuantity(),
+                                     updatedInventory.getReservedQuantity(), updatedInventory.getStatus());
         
         return updatedInventory;
     }
@@ -166,5 +184,71 @@ public class InventoryService {
         InventoryEntity savedInventory = inventoryRepository.save(inventory);
         logger.info("Inventory record saved successfully - ID: {}", savedInventory.getId());
         return savedInventory;
+    }
+    
+    /**
+     * Publish InventoryReservedEvent
+     * @param productId The product ID
+     * @param orderId The order ID
+     * @param availableQuantity The available quantity after reservation
+     * @param reservedQuantity The reserved quantity after reservation
+     * @param inventoryStatus The inventory status
+     */
+    private void publishInventoryReservedEvent(String productId, Long orderId, Integer availableQuantity,
+                                               Integer reservedQuantity, String inventoryStatus) {
+        try {
+            String eventId = UUID.randomUUID().toString();
+            InventoryReservedEvent event = new InventoryReservedEvent(
+                eventId,
+                "INVENTORY_RESERVED",
+                LocalDateTime.now(),
+                productId,
+                orderId,
+                availableQuantity,
+                reservedQuantity,
+                inventoryStatus
+            );
+            
+            inventoryEventProducer.publishInventoryReservedEvent(event);
+            logger.info("✅ InventoryReservedEvent published successfully - EventId: {}, ProductId: {}, OrderId: {}", 
+                       eventId, productId, orderId);
+        } catch (Exception e) {
+            logger.error("❌ Failed to publish InventoryReservedEvent - ProductId: {}, OrderId: {}, Error: {}", 
+                        productId, orderId, e.getMessage(), e);
+        }
+    }
+    
+    /**
+     * Publish InventoryRejectedEvent
+     * @param productId The product ID
+     * @param orderId The order ID
+     * @param availableQuantity The available quantity
+     * @param reservedQuantity The reserved quantity
+     * @param inventoryStatus The inventory status
+     * @param reason The rejection reason
+     */
+    private void publishInventoryRejectedEvent(String productId, Long orderId, Integer availableQuantity,
+                                               Integer reservedQuantity, String inventoryStatus, String reason) {
+        try {
+            String eventId = UUID.randomUUID().toString();
+            InventoryRejectedEvent event = new InventoryRejectedEvent(
+                eventId,
+                "INVENTORY_REJECTED",
+                LocalDateTime.now(),
+                productId,
+                orderId,
+                availableQuantity,
+                reservedQuantity,
+                inventoryStatus,
+                reason
+            );
+            
+            inventoryEventProducer.publishInventoryRejectedEvent(event);
+            logger.info("❌ InventoryRejectedEvent published successfully - EventId: {}, ProductId: {}, OrderId: {}, Reason: {}", 
+                       eventId, productId, orderId, reason);
+        } catch (Exception e) {
+            logger.error("❌ Failed to publish InventoryRejectedEvent - ProductId: {}, OrderId: {}, Error: {}", 
+                        productId, orderId, e.getMessage(), e);
+        }
     }
 }
