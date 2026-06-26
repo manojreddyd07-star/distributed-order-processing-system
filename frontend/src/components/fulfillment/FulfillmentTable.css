@@ -1,0 +1,135 @@
+.fulfillment-table-container {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.table-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.table-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #1a202c;
+}
+
+.table-info {
+  color: #718096;
+  font-size: 0.875rem;
+}
+
+.table-info strong {
+  color: #2d3748;
+  font-weight: 600;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.fulfillment-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.fulfillment-table thead {
+  background-color: #f7fafc;
+}
+
+.fulfillment-table th {
+  padding: 0.75rem 1.5rem;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #4a5568;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.fulfillment-table tbody tr {
+  border-bottom: 1px solid #e2e8f0;
+  transition: background-color 0.2s;
+}
+
+.fulfillment-table tbody tr:hover {
+  background-color: #f7fafc;
+}
+
+.fulfillment-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.fulfillment-table td {
+  padding: 1rem 1.5rem;
+  font-size: 0.875rem;
+  color: #2d3748;
+}
+
+.fulfillment-id {
+  font-weight: 600;
+  color: #2b6cb0;
+}
+
+.order-id {
+  font-weight: 500;
+  color: #4a5568;
+}
+
+.created-date {
+  color: #718096;
+}
+
+.loading-message,
+.empty-message {
+  padding: 3rem;
+  text-align: center;
+  color: #718096;
+  font-size: 1rem;
+}
+
+.loading-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.loading-message::before {
+  content: '';
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 2px solid #e2e8f0;
+  border-top-color: #3182ce;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 768px) {
+  .table-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .fulfillment-table th,
+  .fulfillment-table td {
+    padding: 0.75rem 1rem;
+  }
+
+  .fulfillment-table {
+    font-size: 0.8rem;
+  }
+}

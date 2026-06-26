@@ -6,6 +6,7 @@ import OrdersPage from './pages/Orders/OrdersPage';
 import ValidationPage from './pages/Validation/ValidationPage';
 import PaymentPage from './pages/Payment/PaymentPage';
 import InventoryPage from './pages/Inventory/InventoryPage';
+import FulfillmentPage from './pages/Fulfillment/FulfillmentPage';
 import './App.css';
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
             <Route path="/validations" element={<ValidationPage />} />
             <Route path="/payments" element={<PaymentPage />} />
             <Route path="/inventory" element={<InventoryPage />} />
+            <Route path="/fulfillment" element={<FulfillmentPage />} />
           </Routes>
         </main>
       </div>

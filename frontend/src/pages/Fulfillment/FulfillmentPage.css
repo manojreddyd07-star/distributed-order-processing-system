@@ -1,0 +1,30 @@
+.fulfillment-page {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.fulfillment-page-header {
+  margin-bottom: 2rem;
+}
+
+.fulfillment-page-header h1 {
+  font-size: 2rem;
+  color: #1a202c;
+  margin-bottom: 0.5rem;
+}
+
+.fulfillment-page-header p {
+  color: #718096;
+  font-size: 1rem;
+}
+
+@media (max-width: 768px) {
+  .fulfillment-page {
+    padding: 1rem;
+  }
+
+  .fulfillment-page-header h1 {
+    font-size: 1.5rem;
+  }
+}

@@ -41,6 +41,11 @@ const Navigation = () => {
               Inventory
             </Link>
           </li>
+          <li>
+            <Link to="/fulfillment" className={isActive('/fulfillment')}>
+              Fulfillment
+            </Link>
+          </li>
         </ul>
       </div>
     </nav>
