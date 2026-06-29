@@ -49,3 +49,6 @@ coverage/
 *.swp
 *.swo
 *~
+
+# Documentation
+*.md
