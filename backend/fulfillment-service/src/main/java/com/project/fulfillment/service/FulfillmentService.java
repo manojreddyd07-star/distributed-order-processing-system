@@ -1,6 +1,9 @@
 package com.project.fulfillment.service;
 
+import com.project.fulfillment.entity.FulfillmentAuditLog;
 import com.project.fulfillment.entity.FulfillmentEntity;
+import com.project.fulfillment.producer.FulfillmentEventProducer;
+import com.project.fulfillment.repository.FulfillmentAuditLogRepository;
 import com.project.fulfillment.repository.FulfillmentRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,12 +19,19 @@ public class FulfillmentService {
     
     private static final Logger logger = LoggerFactory.getLogger(FulfillmentService.class);
     private static final String DEFAULT_FULFILLMENT_STATUS = "PENDING";
+    private static final String COMPLETED_FULFILLMENT_STATUS = "COMPLETED";
     
     private final FulfillmentRepository fulfillmentRepository;
+    private final FulfillmentAuditLogRepository auditLogRepository;
+    private final FulfillmentEventProducer eventProducer;
     
     @Autowired
-    public FulfillmentService(FulfillmentRepository fulfillmentRepository) {
+    public FulfillmentService(FulfillmentRepository fulfillmentRepository,
+                             FulfillmentAuditLogRepository auditLogRepository,
+                             FulfillmentEventProducer eventProducer) {
         this.fulfillmentRepository = fulfillmentRepository;
+        this.auditLogRepository = auditLogRepository;
+        this.eventProducer = eventProducer;
     }
     
     /**
@@ -62,6 +72,14 @@ public class FulfillmentService {
         logger.info("Tracking Number: {}", savedFulfillment.getTrackingNumber());
         logger.info("Status: {}", savedFulfillment.getFulfillmentStatus());
         logger.info("Created At: {}", savedFulfillment.getCreatedAt());
+        
+        // Log fulfillment creation to audit log
+        logToAudit(savedFulfillment, "FULFILLMENT_CREATED", 
+                  "Fulfillment created with tracking number: " + savedFulfillment.getTrackingNumber());
+        
+        // Complete the fulfillment immediately (simulate successful fulfillment)
+        completeFulfillment(savedFulfillment.getFulfillmentId());
+        
         logger.info("========================================");
         
         return savedFulfillment;
@@ -137,5 +155,90 @@ public class FulfillmentService {
         List<FulfillmentEntity> fulfillments = fulfillmentRepository.findByFulfillmentStatus(status);
         logger.info("Retrieved {} fulfillments with status: {}", fulfillments.size(), status);
         return fulfillments;
+    }
+    
+    /**
+     * Complete a fulfillment and publish order completed event
+     * @param fulfillmentId The fulfillment ID
+     * @return The updated fulfillment entity
+     */
+    @Transactional
+    public FulfillmentEntity completeFulfillment(Long fulfillmentId) {
+        logger.info("========================================");
+        logger.info("Completing fulfillment ID: {}", fulfillmentId);
+        
+        FulfillmentEntity fulfillment = getFulfillmentById(fulfillmentId);
+        
+        // Update status to COMPLETED
+        fulfillment.setFulfillmentStatus(COMPLETED_FULFILLMENT_STATUS);
+        FulfillmentEntity updatedFulfillment = fulfillmentRepository.save(fulfillment);
+        
+        logger.info("Fulfillment status updated to: {}", COMPLETED_FULFILLMENT_STATUS);
+        
+        // Log completion to audit log
+        logToAudit(updatedFulfillment, "ORDER_COMPLETED", 
+                  String.format("Order %d completed successfully. Tracking number: %s", 
+                               updatedFulfillment.getOrderId(), 
+                               updatedFulfillment.getTrackingNumber()));
+        
+        // Publish OrderCompletedEvent to Kafka
+        try {
+            eventProducer.publishOrderCompletedEvent(updatedFulfillment);
+            logger.info("OrderCompletedEvent published successfully");
+        } catch (Exception e) {
+            logger.error("Failed to publish OrderCompletedEvent", e);
+            // Log the failure but don't rollback the transaction
+            logToAudit(updatedFulfillment, "EVENT_PUBLISH_FAILED", 
+                      "Failed to publish OrderCompletedEvent: " + e.getMessage());
+        }
+        
+        logger.info("========================================");
+        
+        return updatedFulfillment;
+    }
+    
+    /**
+     * Log fulfillment action to audit log
+     * @param fulfillment The fulfillment entity
+     * @param action The action performed
+     * @param description Description of the action
+     */
+    private void logToAudit(FulfillmentEntity fulfillment, String action, String description) {
+        try {
+            FulfillmentAuditLog auditLog = new FulfillmentAuditLog(
+                fulfillment.getFulfillmentId(),
+                fulfillment.getOrderId(),
+                fulfillment.getCustomerId(),
+                fulfillment.getTrackingNumber(),
+                fulfillment.getFulfillmentStatus(),
+                action,
+                description
+            );
+            
+            auditLogRepository.save(auditLog);
+            logger.debug("Audit log created - Action: {}, Fulfillment ID: {}", action, fulfillment.getFulfillmentId());
+        } catch (Exception e) {
+            logger.error("Failed to create audit log for fulfillment ID: {}", fulfillment.getFulfillmentId(), e);
+            // Don't throw exception to avoid breaking the main flow
+        }
+    }
+    
+    /**
+     * Get audit history for a fulfillment
+     * @param fulfillmentId The fulfillment ID
+     * @return List of audit logs
+     */
+    public List<FulfillmentAuditLog> getAuditHistory(Long fulfillmentId) {
+        logger.info("Fetching audit history for fulfillment ID: {}", fulfillmentId);
+        return auditLogRepository.findByFulfillmentId(fulfillmentId);
+    }
+    
+    /**
+     * Get all audit logs
+     * @return List of all audit logs ordered by most recent first
+     */
+    public List<FulfillmentAuditLog> getAllAuditLogs() {
+        logger.info("Fetching all audit logs");
+        return auditLogRepository.findAllByOrderByCreatedAtDesc();
     }
 }

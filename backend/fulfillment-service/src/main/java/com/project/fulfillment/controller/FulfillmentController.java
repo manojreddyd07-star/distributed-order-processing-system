@@ -1,5 +1,6 @@
 package com.project.fulfillment.controller;
 
+import com.project.fulfillment.entity.FulfillmentAuditLog;
 import com.project.fulfillment.entity.FulfillmentEntity;
 import com.project.fulfillment.service.FulfillmentService;
 import org.slf4j.Logger;
@@ -121,6 +122,44 @@ public class FulfillmentController {
             return ResponseEntity.ok(fulfillments);
         } catch (Exception e) {
             logger.error("Error fetching fulfillments by status: {}", status, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
+    /**
+     * Get audit history for a fulfillment
+     * @param fulfillmentId The fulfillment ID
+     * @return List of audit logs
+     */
+    @GetMapping("/{fulfillmentId}/history")
+    public ResponseEntity<List<FulfillmentAuditLog>> getAuditHistory(@PathVariable Long fulfillmentId) {
+        logger.info("GET /api/fulfillments/{}/history - Fetching audit history", fulfillmentId);
+        
+        try {
+            List<FulfillmentAuditLog> auditLogs = fulfillmentService.getAuditHistory(fulfillmentId);
+            logger.info("Successfully retrieved {} audit logs for fulfillment ID: {}", 
+                       auditLogs.size(), fulfillmentId);
+            return ResponseEntity.ok(auditLogs);
+        } catch (Exception e) {
+            logger.error("Error fetching audit history for fulfillment ID: {}", fulfillmentId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
+    /**
+     * Get all audit logs
+     * @return List of all audit logs
+     */
+    @GetMapping("/history")
+    public ResponseEntity<List<FulfillmentAuditLog>> getAllAuditLogs() {
+        logger.info("GET /api/fulfillments/history - Fetching all audit logs");
+        
+        try {
+            List<FulfillmentAuditLog> auditLogs = fulfillmentService.getAllAuditLogs();
+            logger.info("Successfully retrieved {} audit logs", auditLogs.size());
+            return ResponseEntity.ok(auditLogs);
+        } catch (Exception e) {
+            logger.error("Error fetching all audit logs", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
