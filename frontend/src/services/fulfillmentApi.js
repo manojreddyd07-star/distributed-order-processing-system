@@ -71,9 +71,66 @@ export const getFulfillmentHistory = async () => {
   }
 };
 
+/**
+ * Get fulfillments by customer ID
+ * @param {string} customerId - Customer ID
+ * @returns {Promise<Array>} List of fulfillments for the customer
+ */
+export const getFulfillmentsByCustomerId = async (customerId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/customer/${customerId}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error(`Error fetching fulfillments for customer ${customerId}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Get fulfillments by status
+ * @param {string} status - Fulfillment status
+ * @returns {Promise<Array>} List of fulfillments with the specified status
+ */
+export const getFulfillmentsByStatus = async (status) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/status/${status}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error(`Error fetching fulfillments with status ${status}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Get audit history for a specific fulfillment
+ * @param {number|string} fulfillmentId - Fulfillment ID
+ * @returns {Promise<Array>} List of audit logs for the fulfillment
+ */
+export const getAuditHistoryByFulfillmentId = async (fulfillmentId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/${fulfillmentId}/history`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error(`Error fetching audit history for fulfillment ${fulfillmentId}:`, error);
+    throw error;
+  }
+};
+
 export default {
   getAllFulfillments,
   getFulfillmentById,
   getFulfillmentsByOrderId,
-  getFulfillmentHistory
+  getFulfillmentHistory,
+  getFulfillmentsByCustomerId,
+  getFulfillmentsByStatus,
+  getAuditHistoryByFulfillmentId
 };
