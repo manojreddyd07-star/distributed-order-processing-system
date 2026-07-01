@@ -1,7 +1,7 @@
 package com.project.order.service.impl;
 
-import com.project.order.dto.CreateOrderRequest;
-import com.project.order.dto.OrderResponse;
+import com.project.common.dto.CreateOrderRequest;
+import com.project.common.dto.OrderResponse;
 import com.project.order.entity.OrderEntity;
 import com.project.order.repository.OrderRepository;
 import com.project.order.service.KafkaProducerService;

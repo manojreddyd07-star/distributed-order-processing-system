@@ -1,6 +1,6 @@
 package com.project.inventory.consumer;
 
-import com.project.inventory.event.PaymentCompletedEvent;
+import com.project.common.events.PaymentCompletedEvent;
 import com.project.inventory.service.InventoryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

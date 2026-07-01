@@ -1,7 +1,7 @@
 package com.project.payment.service;
 
 import com.project.payment.entity.PaymentEntity;
-import com.project.payment.event.OrderValidatedEvent;
+import com.project.common.events.OrderValidatedEvent;
 import com.project.payment.repository.PaymentRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

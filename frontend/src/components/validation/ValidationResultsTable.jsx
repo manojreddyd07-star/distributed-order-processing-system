@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './ValidationResultsTable.css';
 import ValidationDetailsModal from './ValidationDetailsModal';
-import { getValidationHistory } from '../../services/validationApi';
+import { getValidationHistory } from '../../shared/api/validationApi';
 
 const ValidationResultsTable = () => {
     const [validations, setValidations] = useState([]);

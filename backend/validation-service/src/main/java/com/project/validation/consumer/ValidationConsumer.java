@@ -1,6 +1,6 @@
 package com.project.validation.consumer;
 
-import com.project.validation.event.OrderCreatedEvent;
+import com.project.common.events.OrderCreatedEvent;
 import com.project.validation.service.ValidationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

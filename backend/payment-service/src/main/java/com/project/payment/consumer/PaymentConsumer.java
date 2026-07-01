@@ -1,6 +1,6 @@
 package com.project.payment.consumer;
 
-import com.project.payment.event.OrderValidatedEvent;
+import com.project.common.events.OrderValidatedEvent;
 import com.project.payment.service.PaymentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

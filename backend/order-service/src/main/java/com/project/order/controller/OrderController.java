@@ -1,7 +1,7 @@
 package com.project.order.controller;
 
-import com.project.order.dto.CreateOrderRequest;
-import com.project.order.dto.OrderResponse;
+import com.project.common.dto.CreateOrderRequest;
+import com.project.common.dto.OrderResponse;
 import com.project.order.service.OrderService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;

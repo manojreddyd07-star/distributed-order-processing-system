@@ -1,7 +1,7 @@
 package com.project.order.service;
 
 import com.project.order.entity.OrderEntity;
-import com.project.order.event.OrderCreatedEvent;
+import com.project.common.events.OrderCreatedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;

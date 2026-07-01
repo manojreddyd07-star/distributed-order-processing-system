@@ -1,8 +1,8 @@
 package com.project.inventory.service;
 
 import com.project.inventory.entity.InventoryEntity;
-import com.project.inventory.event.InventoryReservedEvent;
-import com.project.inventory.event.InventoryRejectedEvent;
+import com.project.common.events.InventoryReservedEvent;
+import com.project.common.events.InventoryRejectedEvent;
 import com.project.inventory.producer.InventoryEventProducer;
 import com.project.inventory.repository.InventoryRepository;
 import org.slf4j.Logger;

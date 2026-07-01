@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ValidationStatusBadge from './ValidationStatusBadge';
-import { getValidationHistory } from '../../services/validationApi';
+import { getValidationHistory } from '../../shared/api/validationApi';
 import './ValidationTable.css';
 
 const ValidationTable = ({ refreshTrigger }) => {

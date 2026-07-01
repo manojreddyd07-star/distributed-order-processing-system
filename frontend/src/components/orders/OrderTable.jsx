@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getAllOrders } from '../../services/orderApi';
+import { getAllOrders } from '../../shared/api/orderApi';
 import OrderRow from './OrderRow';
 import './OrderTable.css';
 

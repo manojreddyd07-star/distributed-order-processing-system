@@ -1,7 +1,7 @@
 package com.project.order.service;
 
-import com.project.order.dto.CreateOrderRequest;
-import com.project.order.dto.OrderResponse;
+import com.project.common.dto.CreateOrderRequest;
+import com.project.common.dto.OrderResponse;
 
 import java.util.List;
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import PaymentStatusBadge from './PaymentStatusBadge';
-import { getPaymentHistory } from '../../services/paymentApi';
+import { getPaymentHistory } from '../../shared/api/paymentApi';
 import './PaymentTable.css';
 
 const PaymentTable = ({ refreshTrigger }) => {

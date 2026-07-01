@@ -150,8 +150,8 @@ services:
   # Order Service
   order-service:
     build:
-      context: ./backend/order-service
-      dockerfile: Dockerfile
+      context: ./backend
+      dockerfile: order-service/Dockerfile
     container_name: order-service
     depends_on:
       postgres:
@@ -172,8 +172,8 @@ services:
   # Validation Service
   validation-service:
     build:
-      context: ./backend/validation-service
-      dockerfile: Dockerfile
+      context: ./backend
+      dockerfile: validation-service/Dockerfile
     container_name: validation-service
     depends_on:
       postgres-validation:
@@ -194,8 +194,8 @@ services:
   # Payment Service
   payment-service:
     build:
-      context: ./backend/payment-service
-      dockerfile: Dockerfile
+      context: ./backend
+      dockerfile: payment-service/Dockerfile
     container_name: payment-service
     depends_on:
       postgres-payment:
@@ -217,8 +217,8 @@ services:
   # Inventory Service
   inventory-service:
     build:
-      context: ./backend/inventory-service
-      dockerfile: Dockerfile
+      context: ./backend
+      dockerfile: inventory-service/Dockerfile
     container_name: inventory-service
     depends_on:
       postgres-inventory:
@@ -240,9 +240,8 @@ services:
   # Fulfillment Service
   fulfillment-service:
     build:
-      context: ./backend/fulfillment-service
-      dockerfile: Dockerfile
-  postgres_fulfillment_data:
+      context: ./backend
+      dockerfile: fulfillment-service/Dockerfile
     container_name: fulfillment-service
     depends_on:
       postgres-fulfillment:
@@ -266,6 +265,7 @@ volumes:
   postgres_validation_data:
   postgres_payment_data:
   postgres_inventory_data:
+  postgres_fulfillment_data:
 
 networks:
   order-processing-network:

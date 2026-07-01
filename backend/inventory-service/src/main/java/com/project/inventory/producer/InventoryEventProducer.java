@@ -1,7 +1,7 @@
 package com.project.inventory.producer;
 
-import com.project.inventory.event.InventoryReservedEvent;
-import com.project.inventory.event.InventoryRejectedEvent;
+import com.project.common.events.InventoryReservedEvent;
+import com.project.common.events.InventoryRejectedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,6 +1,6 @@
 package com.project.fulfillment.consumer;
 
-import com.project.fulfillment.event.InventoryReservedEvent;
+import com.project.common.events.InventoryReservedEvent;
 import com.project.fulfillment.service.FulfillmentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

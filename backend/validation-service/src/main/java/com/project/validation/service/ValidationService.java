@@ -1,7 +1,7 @@
 package com.project.validation.service;
 
 import com.project.validation.entity.ValidationEntity;
-import com.project.validation.event.OrderCreatedEvent;
+import com.project.common.events.OrderCreatedEvent;
 import com.project.validation.event.ValidationEventProducer;
 import com.project.validation.repository.ValidationRepository;
 import org.slf4j.Logger;

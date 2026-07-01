@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import InventoryTable from '../../components/inventory/InventoryTable';
-import { getAllInventory } from '../../services/inventoryApi';
+import { getAllInventory } from '../../shared/api/inventoryApi';
 import './InventoryPage.css';
 
 const InventoryPage = () => {
