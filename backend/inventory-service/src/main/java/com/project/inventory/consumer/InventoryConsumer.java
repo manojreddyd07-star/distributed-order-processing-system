@@ -2,6 +2,7 @@ package com.project.inventory.consumer;
 
 import com.project.common.events.PaymentCompletedEvent;
 import com.project.inventory.service.InventoryService;
+import com.project.inventory.service.IdempotencyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +16,12 @@ public class InventoryConsumer {
     private static final Logger logger = LoggerFactory.getLogger(InventoryConsumer.class);
     
     private final InventoryService inventoryService;
+    private final IdempotencyService idempotencyService;
     
     @Autowired
-    public InventoryConsumer(InventoryService inventoryService) {
+    public InventoryConsumer(InventoryService inventoryService, IdempotencyService idempotencyService) {
         this.inventoryService = inventoryService;
+        this.idempotencyService = idempotencyService;
     }
     
     /**
@@ -39,6 +42,14 @@ public class InventoryConsumer {
         logger.info("========================================");
         
         try {
+            // Check for duplicate events using idempotency service
+            if (idempotencyService.isEventProcessed(event.getEventId())) {
+                logger.warn("Duplicate event detected - Event {} has already been processed. Skipping.", 
+                           event.getEventId());
+                acknowledgment.acknowledge();
+                return;
+            }
+            
             // Verify inventory availability
             boolean inventoryAvailable = inventoryService.verifyInventory(
                 event.getProductId(), 
@@ -62,6 +73,9 @@ public class InventoryConsumer {
                            event.getProductId());
             }
             
+            // Mark event as processed
+            idempotencyService.markEventAsProcessed(event.getEventId(), event.getEventType(), "PROCESSED");
+            
             // Acknowledge the message
             acknowledgment.acknowledge();
             logger.info("PaymentCompletedEvent processed and acknowledged successfully");
@@ -69,6 +83,10 @@ public class InventoryConsumer {
         } catch (Exception e) {
             logger.error("Error processing PaymentCompletedEvent for order ID: {}", 
                         event.getOrderId(), e);
+            
+            // Mark event as failed
+            idempotencyService.markEventAsProcessed(event.getEventId(), event.getEventType(), "FAILED");
+            
             // Don't acknowledge - message will be reprocessed
             throw e;
         }

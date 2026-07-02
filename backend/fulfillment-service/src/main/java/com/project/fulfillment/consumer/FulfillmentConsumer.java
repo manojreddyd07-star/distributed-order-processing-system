@@ -2,6 +2,7 @@ package com.project.fulfillment.consumer;
 
 import com.project.common.events.InventoryReservedEvent;
 import com.project.fulfillment.service.FulfillmentService;
+import com.project.fulfillment.service.IdempotencyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +16,12 @@ public class FulfillmentConsumer {
     private static final Logger logger = LoggerFactory.getLogger(FulfillmentConsumer.class);
     
     private final FulfillmentService fulfillmentService;
+    private final IdempotencyService idempotencyService;
     
     @Autowired
-    public FulfillmentConsumer(FulfillmentService fulfillmentService) {
+    public FulfillmentConsumer(FulfillmentService fulfillmentService, IdempotencyService idempotencyService) {
         this.fulfillmentService = fulfillmentService;
+        this.idempotencyService = idempotencyService;
     }
     
     /**
@@ -40,6 +43,14 @@ public class FulfillmentConsumer {
         logger.info("========================================");
         
         try {
+            // Check for duplicate events using idempotency service
+            if (idempotencyService.isEventProcessed(event.getEventId())) {
+                logger.warn("Duplicate event detected - Event {} has already been processed. Skipping.", 
+                           event.getEventId());
+                acknowledgment.acknowledge();
+                return;
+            }
+            
             // Generate a customer ID based on order ID (in real scenario, this would come from the order data)
             String customerId = "CUST-" + String.format("%05d", event.getOrderId() % 100000);
             
@@ -51,6 +62,9 @@ public class FulfillmentConsumer {
             
             logger.info("Fulfillment processing completed for order ID: {}", event.getOrderId());
             
+            // Mark event as processed
+            idempotencyService.markEventAsProcessed(event.getEventId(), event.getEventType(), "PROCESSED");
+            
             // Acknowledge the message
             acknowledgment.acknowledge();
             logger.info("InventoryReservedEvent processed and acknowledged successfully");
@@ -58,6 +72,10 @@ public class FulfillmentConsumer {
         } catch (Exception e) {
             logger.error("Error processing InventoryReservedEvent for order ID: {}", 
                         event.getOrderId(), e);
+            
+            // Mark event as failed
+            idempotencyService.markEventAsProcessed(event.getEventId(), event.getEventType(), "FAILED");
+            
             // Don't acknowledge - message will be reprocessed
             throw e;
         }

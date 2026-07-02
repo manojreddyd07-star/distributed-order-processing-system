@@ -46,6 +46,11 @@ const Navigation = () => {
               Fulfillment
             </Link>
           </li>
+          <li>
+            <Link to="/idempotency" className={isActive('/idempotency')}>
+              Idempotency
+            </Link>
+          </li>
         </ul>
       </div>
     </nav>

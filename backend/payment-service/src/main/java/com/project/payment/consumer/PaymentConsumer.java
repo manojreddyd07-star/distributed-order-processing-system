@@ -2,6 +2,7 @@ package com.project.payment.consumer;
 
 import com.project.common.events.OrderValidatedEvent;
 import com.project.payment.service.PaymentService;
+import com.project.payment.service.IdempotencyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,10 +19,12 @@ public class PaymentConsumer {
     private static final Logger logger = LoggerFactory.getLogger(PaymentConsumer.class);
     
     private final PaymentService paymentService;
+    private final IdempotencyService idempotencyService;
     
     @Autowired
-    public PaymentConsumer(PaymentService paymentService) {
+    public PaymentConsumer(PaymentService paymentService, IdempotencyService idempotencyService) {
         this.paymentService = paymentService;
+        this.idempotencyService = idempotencyService;
     }
     
     /**
@@ -53,6 +56,14 @@ public class PaymentConsumer {
                 return;
             }
             
+            // Check for duplicate events using idempotency service
+            if (idempotencyService.isEventProcessed(event.getEventId())) {
+                logger.warn("Duplicate event detected - Event {} has already been processed. Skipping.", 
+                           event.getEventId());
+                acknowledgment.acknowledge();
+                return;
+            }
+            
             logger.info("Event consumption verified successfully - Order ID: {}, Status: {}", 
                        event.getOrderId(), event.getValidationStatus());
             
@@ -72,6 +83,9 @@ public class PaymentConsumer {
                 logger.warn("Validation message: {}", event.getValidationMessage());
             }
             
+            // Mark event as processed
+            idempotencyService.markEventAsProcessed(event.getEventId(), event.getEventType(), "PROCESSED");
+            
             // Acknowledge message after successful processing
             acknowledgment.acknowledge();
             logger.info("Successfully processed and acknowledged OrderValidatedEvent for order ID: {}", 
@@ -83,6 +97,10 @@ public class PaymentConsumer {
             logger.error("Error processing OrderValidatedEvent for order ID: {}. Error: {}", 
                         event.getOrderId(), e.getMessage(), e);
             logger.error("==========================================================");
+            
+            // Mark event as failed
+            idempotencyService.markEventAsProcessed(event.getEventId(), event.getEventType(), "FAILED");
+            
             // In production, you might want to implement retry logic or send to DLQ
             // For now, we'll acknowledge to prevent blocking the consumer
             acknowledgment.acknowledge();

@@ -7,6 +7,7 @@ import ValidationPage from './pages/Validation/ValidationPage';
 import PaymentPage from './pages/Payment/PaymentPage';
 import InventoryPage from './pages/Inventory/InventoryPage';
 import FulfillmentPage from './pages/Fulfillment/FulfillmentPage';
+import IdempotencyPage from './pages/Idempotency/IdempotencyPage';
 import './App.css';
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
             <Route path="/payments" element={<PaymentPage />} />
             <Route path="/inventory" element={<InventoryPage />} />
             <Route path="/fulfillment" element={<FulfillmentPage />} />
+            <Route path="/idempotency" element={<IdempotencyPage />} />
           </Routes>
         </main>
       </div>
