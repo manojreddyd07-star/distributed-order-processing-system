@@ -8,6 +8,7 @@ import PaymentPage from './pages/Payment/PaymentPage';
 import InventoryPage from './pages/Inventory/InventoryPage';
 import FulfillmentPage from './pages/Fulfillment/FulfillmentPage';
 import IdempotencyPage from './pages/Idempotency/IdempotencyPage';
+import RetryPage from './pages/Retry/RetryPage';
 import './App.css';
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
             <Route path="/inventory" element={<InventoryPage />} />
             <Route path="/fulfillment" element={<FulfillmentPage />} />
             <Route path="/idempotency" element={<IdempotencyPage />} />
+            <Route path="/retry" element={<RetryPage />} />
           </Routes>
         </main>
       </div>

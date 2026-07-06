@@ -3,6 +3,7 @@ package com.project.payment.consumer;
 import com.project.common.events.OrderValidatedEvent;
 import com.project.payment.service.PaymentService;
 import com.project.payment.service.IdempotencyService;
+import com.project.payment.service.RetryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,11 +21,15 @@ public class PaymentConsumer {
     
     private final PaymentService paymentService;
     private final IdempotencyService idempotencyService;
+    private final RetryService retryService;
     
     @Autowired
-    public PaymentConsumer(PaymentService paymentService, IdempotencyService idempotencyService) {
+    public PaymentConsumer(PaymentService paymentService, 
+                          IdempotencyService idempotencyService,
+                          RetryService retryService) {
         this.paymentService = paymentService;
         this.idempotencyService = idempotencyService;
+        this.retryService = retryService;
     }
     
     /**
@@ -101,8 +106,12 @@ public class PaymentConsumer {
             // Mark event as failed
             idempotencyService.markEventAsProcessed(event.getEventId(), event.getEventType(), "FAILED");
             
-            // In production, you might want to implement retry logic or send to DLQ
-            // For now, we'll acknowledge to prevent blocking the consumer
+            // Forward failed event to retry topic
+            logger.info("Forwarding failed event to retry topic: {}", event.getEventId());
+            retryService.createRetryEvent(event, event.getEventType(), event.getEventId(), 
+                                         "order-validated", e.getMessage());
+            
+            // Acknowledge to prevent blocking the consumer
             acknowledgment.acknowledge();
         }
     }

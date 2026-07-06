@@ -3,6 +3,7 @@ package com.project.inventory.consumer;
 import com.project.common.events.PaymentCompletedEvent;
 import com.project.inventory.service.InventoryService;
 import com.project.inventory.service.IdempotencyService;
+import com.project.inventory.service.RetryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,11 +18,15 @@ public class InventoryConsumer {
     
     private final InventoryService inventoryService;
     private final IdempotencyService idempotencyService;
+    private final RetryService retryService;
     
     @Autowired
-    public InventoryConsumer(InventoryService inventoryService, IdempotencyService idempotencyService) {
+    public InventoryConsumer(InventoryService inventoryService, 
+                            IdempotencyService idempotencyService,
+                            RetryService retryService) {
         this.inventoryService = inventoryService;
         this.idempotencyService = idempotencyService;
+        this.retryService = retryService;
     }
     
     /**
@@ -87,8 +92,13 @@ public class InventoryConsumer {
             // Mark event as failed
             idempotencyService.markEventAsProcessed(event.getEventId(), event.getEventType(), "FAILED");
             
-            // Don't acknowledge - message will be reprocessed
-            throw e;
+            // Forward failed event to retry topic
+            logger.info("Forwarding failed event to retry topic: {}", event.getEventId());
+            retryService.createRetryEvent(event, event.getEventType(), event.getEventId(), 
+                                         "payment-completed-events", e.getMessage());
+            
+            // Acknowledge to prevent blocking the consumer
+            acknowledgment.acknowledge();
         }
     }
 }

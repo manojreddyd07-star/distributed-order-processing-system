@@ -1,0 +1,185 @@
+.retry-table-container {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow-x: auto;
+}
+
+.retry-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.retry-table thead {
+  background: #f7fafc;
+}
+
+.retry-table th {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #4a5568;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.retry-table tbody tr {
+  border-bottom: 1px solid #e2e8f0;
+  transition: background-color 0.2s;
+}
+
+.retry-table tbody tr:hover {
+  background: #f7fafc;
+}
+
+.retry-table td {
+  padding: 1rem;
+  vertical-align: middle;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.status-indicator {
+  font-size: 1rem;
+}
+
+.status-pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-success {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-exhausted {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.event-id {
+  font-family: 'Courier New', monospace;
+  font-size: 0.8125rem;
+  color: #4a5568;
+  cursor: help;
+}
+
+.event-type {
+  font-weight: 500;
+  color: #2d3748;
+}
+
+.service-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background: #e6fffa;
+  color: #047857;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.retry-count {
+  min-width: 120px;
+}
+
+.retry-progress {
+  display: block;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 0.5rem;
+}
+
+.retry-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.retry-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+  transition: width 0.3s ease;
+}
+
+.timestamp {
+  color: #718096;
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+
+.failure-reason {
+  max-width: 300px;
+  color: #e53e3e;
+  font-size: 0.8125rem;
+}
+
+.failure-reason span {
+  cursor: help;
+}
+
+.no-retry-records {
+  background: white;
+  border-radius: 12px;
+  padding: 3rem;
+  text-align: center;
+  color: #718096;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.no-retry-records p {
+  margin: 0;
+  font-size: 1.125rem;
+}
+
+@media (max-width: 1024px) {
+  .retry-table {
+    font-size: 0.8125rem;
+  }
+
+  .retry-table th,
+  .retry-table td {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .failure-reason {
+    max-width: 200px;
+  }
+}
+
+@media (max-width: 768px) {
+  .retry-table-container {
+    padding: 1rem;
+  }
+
+  .retry-table {
+    font-size: 0.75rem;
+  }
+
+  .retry-table th,
+  .retry-table td {
+    padding: 0.5rem 0.25rem;
+  }
+
+  .status-badge {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.625rem;
+  }
+}

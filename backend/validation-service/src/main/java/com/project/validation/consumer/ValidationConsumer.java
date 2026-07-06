@@ -3,6 +3,7 @@ package com.project.validation.consumer;
 import com.project.common.events.OrderCreatedEvent;
 import com.project.validation.service.ValidationService;
 import com.project.validation.service.IdempotencyService;
+import com.project.validation.service.RetryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,11 +21,15 @@ public class ValidationConsumer {
     
     private final ValidationService validationService;
     private final IdempotencyService idempotencyService;
+    private final RetryService retryService;
     
     @Autowired
-    public ValidationConsumer(ValidationService validationService, IdempotencyService idempotencyService) {
+    public ValidationConsumer(ValidationService validationService, 
+                            IdempotencyService idempotencyService,
+                            RetryService retryService) {
         this.validationService = validationService;
         this.idempotencyService = idempotencyService;
+        this.retryService = retryService;
     }
     
     /**
@@ -73,8 +78,12 @@ public class ValidationConsumer {
             // Mark event as failed
             idempotencyService.markEventAsProcessed(event.getEventId(), event.getEventType(), "FAILED");
             
-            // In production, you might want to implement retry logic or send to DLQ
-            // For now, we'll acknowledge to prevent blocking the consumer
+            // Forward failed event to retry topic
+            logger.info("Forwarding failed event to retry topic: {}", event.getEventId());
+            retryService.createRetryEvent(event, event.getEventType(), event.getEventId(), 
+                                         "order-created", e.getMessage());
+            
+            // Acknowledge to prevent blocking the consumer
             acknowledgment.acknowledge();
         }
     }

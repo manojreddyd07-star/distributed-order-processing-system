@@ -51,6 +51,11 @@ const Navigation = () => {
               Idempotency
             </Link>
           </li>
+          <li>
+            <Link to="/retry" className={isActive('/retry')}>
+              Retry
+            </Link>
+          </li>
         </ul>
       </div>
     </nav>

@@ -48,4 +48,10 @@ coverage/
 # Misc
 *.swp
 *.swo
+
+# Documentation
+*.md
 *~
+
+# Documentation
+*.md
