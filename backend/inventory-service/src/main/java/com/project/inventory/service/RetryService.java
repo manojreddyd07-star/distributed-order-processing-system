@@ -1,7 +1,9 @@
 package com.project.inventory.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.project.common.config.DlqTopicConfig;
 import com.project.common.config.RetryTopicConfig;
+import com.project.common.events.FailedEvent;
 import com.project.common.events.PaymentCompletedEvent;
 import com.project.common.events.RetryEvent;
 import com.project.inventory.entity.RetryRecordEntity;
@@ -92,9 +94,13 @@ public class RetryService {
         int newRetryCount = retryEvent.getRetryCount() + 1;
         
         if (RetryTopicConfig.isMaxRetriesReached(newRetryCount)) {
-            logger.error("Max retries exhausted for event: {}. Final failure.", 
+            logger.error("Max retries exhausted for event: {}. Routing to DLQ.", 
                         retryEvent.getOriginalEventId());
             updateRetryStatus(retryEvent.getRetryId(), "EXHAUSTED", failureReason);
+            
+            // Route to Dead Letter Queue
+            routeToDlq(retryEvent, failureReason);
+            
         } else {
             long retryInterval = RetryTopicConfig.getRetryInterval(newRetryCount);
             LocalDateTime nextRetryTime = LocalDateTime.now().plusSeconds(retryInterval / 1000);
@@ -198,5 +204,34 @@ public class RetryService {
             record.getFailureReason(), record.getEventPayload(), record.getEventClass(),
             record.getServiceName(), record.getTargetTopic(), record.getMaxRetries()
         );
+    }
+    
+    /**
+     * Route failed event to Dead Letter Queue
+     */
+    private void routeToDlq(RetryEvent retryEvent, String failureReason) {
+        try {
+            logger.info("Routing event to DLQ - EventID: {}, Type: {}, Service: {}",
+                       retryEvent.getOriginalEventId(), retryEvent.getEventType(), serviceName);
+            
+            // Create FailedEvent
+            FailedEvent failedEvent = new FailedEvent(
+                retryEvent.getOriginalEventId(),
+                retryEvent.getEventType(),
+                serviceName,
+                failureReason,
+                retryEvent.getEventPayload(),
+                LocalDateTime.now()
+            );
+            
+            // Send to DLQ topic
+            kafkaTemplate.send(DlqTopicConfig.DLQ_TOPIC, failedEvent);
+            
+            logger.info("Event successfully routed to DLQ - EventID: {}", retryEvent.getOriginalEventId());
+            
+        } catch (Exception e) {
+            logger.error("Failed to route event to DLQ - EventID: {}. Error: {}",
+                        retryEvent.getOriginalEventId(), e.getMessage(), e);
+        }
     }
 }

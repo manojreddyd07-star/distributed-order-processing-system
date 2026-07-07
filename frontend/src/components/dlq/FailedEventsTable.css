@@ -1,0 +1,128 @@
+.failed-events-table-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.failed-events-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.failed-events-table thead {
+  background-color: #f8f9fa;
+}
+
+.failed-events-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 2px solid #dee2e6;
+  white-space: nowrap;
+}
+
+.failed-events-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #dee2e6;
+  color: #555;
+}
+
+.failed-events-table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.event-id {
+  font-family: monospace;
+  color: #2196F3;
+  font-weight: 500;
+}
+
+.event-type {
+  font-weight: 500;
+  color: #333;
+}
+
+.service-name .service-badge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.service-badge.validation-service {
+  background-color: #e3f2fd;
+  color: #1976d2;
+}
+
+.service-badge.payment-service {
+  background-color: #f3e5f5;
+  color: #7b1fa2;
+}
+
+.service-badge.inventory-service {
+  background-color: #e8f5e9;
+  color: #388e3c;
+}
+
+.service-badge.fulfillment-service {
+  background-color: #fff3e0;
+  color: #f57c00;
+}
+
+.error-message {
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #d32f2f;
+}
+
+.failed-at {
+  white-space: nowrap;
+  color: #666;
+}
+
+.actions {
+  text-align: center;
+}
+
+.details-button {
+  padding: 6px 12px;
+  background-color: #2196F3;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.details-button:hover {
+  background-color: #1976D2;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+}
+
+.empty-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+}
+
+.empty-state h3 {
+  margin: 0 0 8px 0;
+  color: #333;
+  font-size: 20px;
+}
+
+.empty-state p {
+  margin: 0;
+  color: #888;
+  font-size: 14px;
+}

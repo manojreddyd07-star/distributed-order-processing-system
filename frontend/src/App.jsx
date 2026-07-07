@@ -9,6 +9,7 @@ import InventoryPage from './pages/Inventory/InventoryPage';
 import FulfillmentPage from './pages/Fulfillment/FulfillmentPage';
 import IdempotencyPage from './pages/Idempotency/IdempotencyPage';
 import RetryPage from './pages/Retry/RetryPage';
+import DLQPage from './pages/DLQ/DLQPage';
 import './App.css';
 
 function App() {
@@ -27,6 +28,7 @@ function App() {
             <Route path="/fulfillment" element={<FulfillmentPage />} />
             <Route path="/idempotency" element={<IdempotencyPage />} />
             <Route path="/retry" element={<RetryPage />} />
+            <Route path="/dlq" element={<DLQPage />} />
           </Routes>
         </main>
       </div>

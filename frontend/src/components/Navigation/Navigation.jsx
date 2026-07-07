@@ -56,6 +56,11 @@ const Navigation = () => {
               Retry
             </Link>
           </li>
+          <li>
+            <Link to="/dlq" className={isActive('/dlq')}>
+              DLQ
+            </Link>
+          </li>
         </ul>
       </div>
     </nav>
