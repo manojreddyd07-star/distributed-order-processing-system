@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface FailedEventRepository extends JpaRepository<FailedEventEntity, Long> {
@@ -23,4 +24,9 @@ public interface FailedEventRepository extends JpaRepository<FailedEventEntity, 
      * Find failed events by event type
      */
     List<FailedEventEntity> findByEventTypeOrderByFailedAtDesc(String eventType);
+    
+    /**
+     * Find failed event by event ID
+     */
+    Optional<FailedEventEntity> findByEventId(String eventId);
 }

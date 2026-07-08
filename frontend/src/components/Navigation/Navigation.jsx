@@ -61,6 +61,11 @@ const Navigation = () => {
               DLQ
             </Link>
           </li>
+          <li>
+            <Link to="/replay" className={isActive('/replay')}>
+              Replay
+            </Link>
+          </li>
         </ul>
       </div>
     </nav>
