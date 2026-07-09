@@ -66,6 +66,11 @@ const Navigation = () => {
               Replay
             </Link>
           </li>
+          <li>
+            <Link to="/audit" className={isActive('/audit')}>
+              Audit
+            </Link>
+          </li>
         </ul>
       </div>
     </nav>

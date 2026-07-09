@@ -11,6 +11,7 @@ import IdempotencyPage from './pages/Idempotency/IdempotencyPage';
 import RetryPage from './pages/Retry/RetryPage';
 import DLQPage from './pages/DLQ/DLQPage';
 import ReplayPage from './pages/Replay/ReplayPage';
+import AuditPage from './pages/Audit/AuditPage';
 import './App.css';
 
 function App() {
@@ -31,6 +32,7 @@ function App() {
             <Route path="/retry" element={<RetryPage />} />
             <Route path="/dlq" element={<DLQPage />} />
             <Route path="/replay" element={<ReplayPage />} />
+            <Route path="/audit" element={<AuditPage />} />
           </Routes>
         </main>
       </div>
