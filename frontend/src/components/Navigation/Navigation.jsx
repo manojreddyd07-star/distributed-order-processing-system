@@ -71,6 +71,11 @@ const Navigation = () => {
               Audit
             </Link>
           </li>
+          <li>
+            <Link to="/monitoring" className={isActive('/monitoring')}>
+              Monitoring
+            </Link>
+          </li>
         </ul>
       </div>
     </nav>

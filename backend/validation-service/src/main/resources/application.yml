@@ -55,6 +55,23 @@ server:
   servlet:
     context-path: /api
 
+# Spring Boot Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,info
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+  health:
+    db:
+      enabled: true
+    kafka:
+      enabled: true
+
 logging:
   level:
     com.project.validation: DEBUG

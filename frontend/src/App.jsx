@@ -12,6 +12,7 @@ import RetryPage from './pages/Retry/RetryPage';
 import DLQPage from './pages/DLQ/DLQPage';
 import ReplayPage from './pages/Replay/ReplayPage';
 import AuditPage from './pages/Audit/AuditPage';
+import MonitoringPage from './pages/Monitoring/MonitoringPage';
 import './App.css';
 
 function App() {
@@ -33,6 +34,7 @@ function App() {
             <Route path="/dlq" element={<DLQPage />} />
             <Route path="/replay" element={<ReplayPage />} />
             <Route path="/audit" element={<AuditPage />} />
+            <Route path="/monitoring" element={<MonitoringPage />} />
           </Routes>
         </main>
       </div>
