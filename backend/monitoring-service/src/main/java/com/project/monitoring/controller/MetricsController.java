@@ -2,6 +2,7 @@ package com.project.monitoring.controller;
 
 import com.project.monitoring.dto.ApplicationMetricsDTO;
 import com.project.monitoring.dto.HealthStatusDTO;
+import com.project.monitoring.dto.PerformanceMetricsDTO;
 import com.project.monitoring.service.MetricsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,5 +37,18 @@ public class MetricsController {
         log.info("Received request to get application metrics");
         ApplicationMetricsDTO metrics = metricsService.getApplicationMetrics();
         return ResponseEntity.ok(metrics);
+    }
+
+    /**
+     * Get performance metrics (throughput, latency, failure rate)
+     * GET /api/monitoring/performance-metrics
+     * @param minutes Time window in minutes (optional, default: 5)
+     */
+    @GetMapping("/performance-metrics")
+    public ResponseEntity<PerformanceMetricsDTO> getPerformanceMetrics(
+            @RequestParam(required = false, defaultValue = "5") Integer minutes) {
+        log.info("Received request to get performance metrics for last {} minutes", minutes);
+        PerformanceMetricsDTO performanceMetrics = metricsService.getPerformanceMetrics(minutes);
+        return ResponseEntity.ok(performanceMetrics);
     }
 }

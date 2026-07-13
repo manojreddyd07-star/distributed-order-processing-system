@@ -28,7 +28,24 @@ export const getApplicationMetrics = async () => {
   }
 };
 
+/**
+ * Get performance metrics (throughput, latency, failure rate)
+ * @param {number} minutes - Time window in minutes (default: 5)
+ */
+export const getPerformanceMetrics = async (minutes = 5) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/performance-metrics`, {
+      params: { minutes }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching performance metrics:', error);
+    throw error;
+  }
+};
+
 export default {
   getHealthMetrics,
   getApplicationMetrics,
+  getPerformanceMetrics,
 };

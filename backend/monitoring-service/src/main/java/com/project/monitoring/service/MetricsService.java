@@ -2,7 +2,13 @@ package com.project.monitoring.service;
 
 import com.project.monitoring.dto.ApplicationMetricsDTO;
 import com.project.monitoring.dto.HealthStatusDTO;
+import com.project.monitoring.dto.PerformanceMetricsDTO;
 import com.project.monitoring.dto.ServiceHealthDTO;
+import com.project.monitoring.entity.EventMetric;
+import com.project.monitoring.repository.EventMetricRepository;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Slf4j
@@ -23,6 +30,8 @@ public class MetricsService {
     private final HealthEndpoint healthEndpoint;
     private final MetricsEndpoint metricsEndpoint;
     private final RestTemplate restTemplate;
+    private final EventMetricRepository eventMetricRepository;
+    private final MeterRegistry meterRegistry;
 
     @Value("${monitoring.services.order-service.url:http://localhost:8081}")
     private String orderServiceUrl;
@@ -284,5 +293,214 @@ public class MetricsService {
             log.debug("Metric {} not available", metricName);
         }
         return 0.0;
+    }
+
+    /**
+     * Get performance metrics for a specified time window
+     * @param minutes Time window in minutes (default: 5)
+     */
+    public PerformanceMetricsDTO getPerformanceMetrics(Integer minutes) {
+        log.info("Collecting performance metrics for last {} minutes", minutes);
+        
+        int timeWindow = minutes != null ? minutes : 5;
+        LocalDateTime endTime = LocalDateTime.now();
+        LocalDateTime startTime = endTime.minusMinutes(timeWindow);
+        
+        return PerformanceMetricsDTO.builder()
+                .timestamp(LocalDateTime.now())
+                .timeWindow("last_" + timeWindow + "_minutes")
+                .throughput(calculateThroughput(startTime, endTime, timeWindow))
+                .latency(calculateProcessingLatency(startTime, endTime))
+                .failure(calculateFailureRate(startTime, endTime))
+                .build();
+    }
+
+    /**
+     * Calculate throughput metrics
+     */
+    public PerformanceMetricsDTO.ThroughputMetrics calculateThroughput(
+            LocalDateTime startTime, LocalDateTime endTime, int timeWindowMinutes) {
+        try {
+            long totalEvents = eventMetricRepository.countByTimestampBetween(startTime, endTime);
+            long successfulEvents = eventMetricRepository.countByStatusAndTimestampBetween("SUCCESS", startTime, endTime);
+            long failedEvents = eventMetricRepository.countByStatusAndTimestampBetween("FAILED", startTime, endTime);
+            
+            // Calculate events per second and per minute
+            long durationSeconds = ChronoUnit.SECONDS.between(startTime, endTime);
+            double eventsPerSecond = durationSeconds > 0 ? (double) totalEvents / durationSeconds : 0.0;
+            double eventsPerMinute = timeWindowMinutes > 0 ? (double) totalEvents / timeWindowMinutes : 0.0;
+            
+            // Update Prometheus metrics
+            Counter.builder("monitoring.throughput.total")
+                    .description("Total number of events processed")
+                    .register(meterRegistry)
+                    .increment(totalEvents);
+            
+            Counter.builder("monitoring.throughput.success")
+                    .description("Total successful events")
+                    .register(meterRegistry)
+                    .increment(successfulEvents);
+            
+            Counter.builder("monitoring.throughput.failed")
+                    .description("Total failed events")
+                    .register(meterRegistry)
+                    .increment(failedEvents);
+            
+            log.info("Throughput calculated - Total: {}, Success: {}, Failed: {}, Events/sec: {}", 
+                    totalEvents, successfulEvents, failedEvents, eventsPerSecond);
+            
+            return PerformanceMetricsDTO.ThroughputMetrics.builder()
+                    .totalEvents(totalEvents)
+                    .eventsPerSecond(Math.round(eventsPerSecond * 100.0) / 100.0)
+                    .eventsPerMinute(Math.round(eventsPerMinute * 100.0) / 100.0)
+                    .successfulEvents(successfulEvents)
+                    .failedEvents(failedEvents)
+                    .build();
+        } catch (Exception e) {
+            log.error("Error calculating throughput metrics", e);
+            return PerformanceMetricsDTO.ThroughputMetrics.builder()
+                    .totalEvents(0L)
+                    .eventsPerSecond(0.0)
+                    .eventsPerMinute(0.0)
+                    .successfulEvents(0L)
+                    .failedEvents(0L)
+                    .build();
+        }
+    }
+
+    /**
+     * Calculate processing latency metrics
+     */
+    public PerformanceMetricsDTO.LatencyMetrics calculateProcessingLatency(
+            LocalDateTime startTime, LocalDateTime endTime) {
+        try {
+            List<EventMetric> events = eventMetricRepository.findByTimestampBetween(startTime, endTime);
+            
+            if (events.isEmpty()) {
+                log.info("No events found for latency calculation");
+                return PerformanceMetricsDTO.LatencyMetrics.builder()
+                        .averageProcessingTimeMs(0.0)
+                        .averageProcessingTimeSeconds(0.0)
+                        .minProcessingTimeMs(0L)
+                        .maxProcessingTimeMs(0L)
+                        .build();
+            }
+            
+            // Calculate average, min, max processing times
+            Double avgProcessingTime = eventMetricRepository.getAverageProcessingTime(startTime, endTime);
+            
+            Long minProcessingTime = events.stream()
+                    .map(EventMetric::getProcessingTimeMs)
+                    .filter(Objects::nonNull)
+                    .min(Long::compareTo)
+                    .orElse(0L);
+            
+            Long maxProcessingTime = events.stream()
+                    .map(EventMetric::getProcessingTimeMs)
+                    .filter(Objects::nonNull)
+                    .max(Long::compareTo)
+                    .orElse(0L);
+            
+            double avgMs = avgProcessingTime != null ? avgProcessingTime : 0.0;
+            double avgSeconds = avgMs / 1000.0;
+            
+            // Update Prometheus metrics
+            Timer.builder("monitoring.processing.latency")
+                    .description("Event processing latency")
+                    .register(meterRegistry)
+                    .record(java.time.Duration.ofMillis(avgMs.longValue()));
+            
+            log.info("Latency calculated - Avg: {} ms, Min: {} ms, Max: {} ms", avgMs, minProcessingTime, maxProcessingTime);
+            
+            return PerformanceMetricsDTO.LatencyMetrics.builder()
+                    .averageProcessingTimeMs(Math.round(avgMs * 100.0) / 100.0)
+                    .averageProcessingTimeSeconds(Math.round(avgSeconds * 100.0) / 100.0)
+                    .minProcessingTimeMs(minProcessingTime)
+                    .maxProcessingTimeMs(maxProcessingTime)
+                    .build();
+        } catch (Exception e) {
+            log.error("Error calculating latency metrics", e);
+            return PerformanceMetricsDTO.LatencyMetrics.builder()
+                    .averageProcessingTimeMs(0.0)
+                    .averageProcessingTimeSeconds(0.0)
+                    .minProcessingTimeMs(0L)
+                    .maxProcessingTimeMs(0L)
+                    .build();
+        }
+    }
+
+    /**
+     * Calculate failure rate metrics
+     */
+    public PerformanceMetricsDTO.FailureMetrics calculateFailureRate(
+            LocalDateTime startTime, LocalDateTime endTime) {
+        try {
+            long totalEvents = eventMetricRepository.countByTimestampBetween(startTime, endTime);
+            long totalFailures = eventMetricRepository.countByStatusAndTimestampBetween("FAILED", startTime, endTime);
+            long totalSuccess = eventMetricRepository.countByStatusAndTimestampBetween("SUCCESS", startTime, endTime);
+            
+            // Calculate failure and success rates
+            double failureRate = totalEvents > 0 ? ((double) totalFailures / totalEvents) * 100 : 0.0;
+            double successRate = totalEvents > 0 ? ((double) totalSuccess / totalEvents) * 100 : 0.0;
+            
+            // Calculate consecutive failures
+            List<EventMetric> recentEvents = eventMetricRepository.findByTimestampBetween(
+                    endTime.minusMinutes(10), endTime);
+            recentEvents.sort(Comparator.comparing(EventMetric::getTimestamp).reversed());
+            
+            long consecutiveFailures = 0;
+            for (EventMetric event : recentEvents) {
+                if ("FAILED".equals(event.getStatus())) {
+                    consecutiveFailures++;
+                } else {
+                    break;
+                }
+            }
+            
+            // Update Prometheus metrics
+            meterRegistry.gauge("monitoring.failure.rate", failureRate);
+            meterRegistry.gauge("monitoring.success.rate", successRate);
+            
+            log.info("Failure rate calculated - Failures: {}, Total: {}, Failure Rate: {}%, Consecutive: {}", 
+                    totalFailures, totalEvents, failureRate, consecutiveFailures);
+            
+            return PerformanceMetricsDTO.FailureMetrics.builder()
+                    .totalFailures(totalFailures)
+                    .failureRate(Math.round(failureRate * 100.0) / 100.0)
+                    .successRate(Math.round(successRate * 100.0) / 100.0)
+                    .consecutiveFailures(consecutiveFailures)
+                    .build();
+        } catch (Exception e) {
+            log.error("Error calculating failure rate metrics", e);
+            return PerformanceMetricsDTO.FailureMetrics.builder()
+                    .totalFailures(0L)
+                    .failureRate(0.0)
+                    .successRate(0.0)
+                    .consecutiveFailures(0L)
+                    .build();
+        }
+    }
+
+    /**
+     * Record an event metric (to be called when events are processed)
+     */
+    public void recordEventMetric(String eventType, String serviceName, String status, 
+                                  Long processingTimeMs, String orderId, String errorMessage) {
+        try {
+            EventMetric eventMetric = EventMetric.builder()
+                    .eventType(eventType)
+                    .serviceName(serviceName)
+                    .status(status)
+                    .timestamp(LocalDateTime.now())
+                    .processingTimeMs(processingTimeMs)
+                    .orderId(orderId)
+                    .errorMessage(errorMessage)
+                    .build();
+            
+            eventMetricRepository.save(eventMetric);
+            log.debug("Event metric recorded: {} - {} - {}", eventType, serviceName, status);
+        } catch (Exception e) {
+            log.error("Error recording event metric", e);
+        }
     }
 }

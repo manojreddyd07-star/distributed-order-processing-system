@@ -1,27 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import MetricsCard from '../../components/monitoring/MetricsCard';
 import HealthGrid from '../../components/monitoring/HealthGrid';
-import { getHealthMetrics, getApplicationMetrics } from '../../services/monitoringApi';
+import ThroughputChart from '../../components/monitoring/ThroughputChart';
+import LatencyChart from '../../components/monitoring/LatencyChart';
+import FailureMetricsCard from '../../components/monitoring/FailureMetricsCard';
+import { getHealthMetrics, getApplicationMetrics, getPerformanceMetrics } from '../../services/monitoringApi';
 import './MonitoringPage.css';
 
 const MonitoringPage = () => {
   const [healthData, setHealthData] = useState(null);
   const [metricsData, setMetricsData] = useState(null);
+  const [performanceData, setPerformanceData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(null);
+  const [timeWindow, setTimeWindow] = useState(5); // Default 5 minutes
 
   const fetchData = async () => {
     try {
       setError(null);
-      const [health, metrics] = await Promise.all([
+      const [health, metrics, performance] = await Promise.all([
         getHealthMetrics(),
         getApplicationMetrics(),
+        getPerformanceMetrics(timeWindow),
       ]);
       
       setHealthData(health);
       setMetricsData(metrics);
+      setPerformanceData(performance);
       setLastUpdated(new Date());
       setLoading(false);
     } catch (err) {
@@ -33,7 +40,7 @@ const MonitoringPage = () => {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [timeWindow]);
 
   useEffect(() => {
     if (autoRefresh) {
@@ -43,7 +50,7 @@ const MonitoringPage = () => {
 
       return () => clearInterval(interval);
     }
-  }, [autoRefresh]);
+  }, [autoRefresh, timeWindow]);
 
   const handleRefresh = () => {
     setLoading(true);
@@ -210,6 +217,32 @@ const MonitoringPage = () => {
               />
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Performance Metrics Section */}
+      {performanceData && (
+        <div className="performance-section">
+          <div className="section-header">
+            <h2 className="section-title">Performance Metrics</h2>
+            <div className="time-window-selector">
+              <label>Time Window:</label>
+              <select 
+                value={timeWindow} 
+                onChange={(e) => setTimeWindow(Number(e.target.value))}
+                className="time-window-dropdown"
+              >
+                <option value={5}>Last 5 minutes</option>
+                <option value={15}>Last 15 minutes</option>
+                <option value={30}>Last 30 minutes</option>
+                <option value={60}>Last 1 hour</option>
+              </select>
+            </div>
+          </div>
+
+          <ThroughputChart throughputData={performanceData.throughput} />
+          <LatencyChart latencyData={performanceData.latency} />
+          <FailureMetricsCard failureData={performanceData.failure} />
         </div>
       )}
     </div>
