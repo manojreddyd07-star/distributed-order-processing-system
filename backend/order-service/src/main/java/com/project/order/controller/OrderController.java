@@ -2,6 +2,8 @@ package com.project.order.controller;
 
 import com.project.common.dto.CreateOrderRequest;
 import com.project.common.dto.OrderResponse;
+import com.project.common.dto.OrderSearchRequest;
+import com.project.common.dto.PagedResponse;
 import com.project.order.service.OrderService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +54,52 @@ public class OrderController {
     @GetMapping("/{id}")
     public ResponseEntity<OrderResponse> getOrderById(@PathVariable Long id) {
         OrderResponse response = orderService.getOrderById(id);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Search orders with filters and pagination
+     * @param customerId filter by customer ID (optional)
+     * @param orderStatus filter by order status (optional)
+     * @param startDate filter by start date in ISO format (optional)
+     * @param endDate filter by end date in ISO format (optional)
+     * @param page page number (default: 0)
+     * @param size page size (default: 10)
+     * @param sortBy sort field (default: createdAt)
+     * @param sortDirection sort direction ASC/DESC (default: DESC)
+     * @return paginated list of orders
+     */
+    @GetMapping("/search")
+    public ResponseEntity<PagedResponse<OrderResponse>> searchOrders(
+            @RequestParam(required = false) Long customerId,
+            @RequestParam(required = false) String orderStatus,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "10") Integer size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDirection) {
+        
+        // Build search request
+        OrderSearchRequest searchRequest = new OrderSearchRequest();
+        searchRequest.setCustomerId(customerId);
+        searchRequest.setOrderStatus(orderStatus);
+        
+        // Parse dates if provided
+        if (startDate != null && !startDate.trim().isEmpty()) {
+            searchRequest.setStartDate(java.time.LocalDateTime.parse(startDate));
+        }
+        if (endDate != null && !endDate.trim().isEmpty()) {
+            searchRequest.setEndDate(java.time.LocalDateTime.parse(endDate));
+        }
+        
+        searchRequest.setPage(page);
+        searchRequest.setSize(size);
+        searchRequest.setSortBy(sortBy);
+        searchRequest.setSortDirection(sortDirection);
+        
+        // Execute search
+        PagedResponse<OrderResponse> response = orderService.searchOrders(searchRequest);
         return ResponseEntity.ok(response);
     }
 }
