@@ -17,4 +17,17 @@ FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 COPY --from=build /app/fulfillment-service/target/*.jar app.jar
 EXPOSE 8084
-ENTRYPOINT ["java", "-jar", "app.jar"]
+
+# Optimized JVM settings for performance
+ENTRYPOINT ["java", \
+  "-XX:+UseG1GC", \
+  "-XX:MaxGCPauseMillis=200", \
+  "-XX:+ParallelRefProcEnabled", \
+  "-XX:+UseStringDeduplication", \
+  "-Xms512m", \
+  "-Xmx1024m", \
+  "-XX:MetaspaceSize=128m", \
+  "-XX:MaxMetaspaceSize=256m", \
+  "-XX:+HeapDumpOnOutOfMemoryError", \
+  "-XX:HeapDumpPath=/tmp/heapdump.hprof", \
+  "-jar", "app.jar"]

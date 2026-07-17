@@ -1,7 +1,7 @@
 import React from 'react';
 import ServiceStatusCard from './ServiceStatusCard';
 
-const KafkaStatusSection = () => {
+const KafkaStatusSection = React.memo(() => {
   const kafkaServices = [
     {
       name: 'Zookeeper',
@@ -39,6 +39,8 @@ const KafkaStatusSection = () => {
       </div>
     </div>
   );
-};
+});
+
+KafkaStatusSection.displayName = 'KafkaStatusSection';
 
 export default KafkaStatusSection;

@@ -1,4 +1,36 @@
+import { cachedApiCall } from '../shared/utils/apiUtils';
+
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
+
+/**
+ * Common fetch wrapper with error handling
+ */
+const fetchWithErrorHandling = async (url, options = {}) => {
+  try {
+    const response = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+      ...options,
+    });
+
+    if (!response.ok) {
+      let error;
+      try {
+        error = await response.json();
+      } catch {
+        error = { message: `HTTP ${response.status}: ${response.statusText}` };
+      }
+      throw new Error(error.message || 'Request failed');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('API Error:', error);
+    throw error;
+  }
+};
 
 /**
  * Create a new order
@@ -6,80 +38,38 @@ const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api
  * @returns {Promise<Object>} The created order response
  */
 export const createOrder = async (orderData) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/orders`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(orderData),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to create order');
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Error creating order:', error);
-    throw error;
-  }
+  return fetchWithErrorHandling(`${API_BASE_URL}/orders`, {
+    method: 'POST',
+    body: JSON.stringify(orderData),
+  });
 };
 
 /**
- * Get all orders
+ * Get all orders (with caching)
  * @returns {Promise<Array>} List of all orders
  */
 export const getAllOrders = async () => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/orders`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to fetch orders');
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Error fetching orders:', error);
-    throw error;
-  }
+  return cachedApiCall(
+    'orders:all',
+    () => fetchWithErrorHandling(`${API_BASE_URL}/orders`)
+  );
 };
 
 /**
- * Get an order by ID
+ * Get an order by ID (with caching)
  * @param {number} orderId - The order ID
  * @returns {Promise<Object>} The order response
  */
 export const getOrderById = async (orderId) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/orders/${orderId}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to fetch order');
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Error fetching order:', error);
-    throw error;
-  }
+  return cachedApiCall(
+    `orders:${orderId}`,
+    () => fetchWithErrorHandling(`${API_BASE_URL}/orders/${orderId}`)
+  );
 };
 
 /**
  * Search orders with filters and pagination
+ * Note: Search results are cached based on query params
  * @param {Object} searchParams - Search parameters
  * @param {number} searchParams.customerId - Filter by customer ID (optional)
  * @param {string} searchParams.orderStatus - Filter by order status (optional)
@@ -92,44 +82,35 @@ export const getOrderById = async (orderId) => {
  * @returns {Promise<Object>} Paginated order response
  */
 export const searchOrders = async (searchParams = {}) => {
-  try {
-    const params = new URLSearchParams();
-    
-    // Add search parameters
-    if (searchParams.customerId) {
-      params.append('customerId', searchParams.customerId);
-    }
-    if (searchParams.orderStatus) {
-      params.append('orderStatus', searchParams.orderStatus);
-    }
-    if (searchParams.startDate) {
-      params.append('startDate', searchParams.startDate);
-    }
-    if (searchParams.endDate) {
-      params.append('endDate', searchParams.endDate);
-    }
-    
-    // Add pagination parameters
-    params.append('page', searchParams.page || 0);
-    params.append('size', searchParams.size || 10);
-    params.append('sortBy', searchParams.sortBy || 'createdAt');
-    params.append('sortDirection', searchParams.sortDirection || 'DESC');
-    
-    const response = await fetch(`${API_BASE_URL}/orders/search?${params}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to search orders');
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Error searching orders:', error);
-    throw error;
+  const params = new URLSearchParams();
+  
+  // Add search parameters
+  if (searchParams.customerId) {
+    params.append('customerId', searchParams.customerId);
   }
+  if (searchParams.orderStatus) {
+    params.append('orderStatus', searchParams.orderStatus);
+  }
+  if (searchParams.startDate) {
+    params.append('startDate', searchParams.startDate);
+  }
+  if (searchParams.endDate) {
+    params.append('endDate', searchParams.endDate);
+  }
+  
+  // Add pagination parameters
+  params.append('page', searchParams.page || 0);
+  params.append('size', searchParams.size || 10);
+  params.append('sortBy', searchParams.sortBy || 'createdAt');
+  params.append('sortDirection', searchParams.sortDirection || 'DESC');
+  
+  const queryString = params.toString();
+  const cacheKey = `orders:search:${queryString}`;
+  
+  return cachedApiCall(
+    cacheKey,
+    () => fetchWithErrorHandling(`${API_BASE_URL}/orders/search?${queryString}`),
+    // Cache search results for 30 seconds only
+    true
+  );
 };

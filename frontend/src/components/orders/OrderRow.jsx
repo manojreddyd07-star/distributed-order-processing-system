@@ -1,7 +1,7 @@
 import React from 'react';
 import './OrderRow.css';
 
-const OrderRow = ({ order }) => {
+const OrderRow = React.memo(({ order }) => {
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -47,6 +47,8 @@ const OrderRow = ({ order }) => {
       <td className="created-at">{formatDateTime(order.createdAt)}</td>
     </tr>
   );
-};
+});
+
+OrderRow.displayName = 'OrderRow';
 
 export default OrderRow;

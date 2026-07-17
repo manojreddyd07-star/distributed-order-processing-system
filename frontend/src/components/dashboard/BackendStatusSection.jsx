@@ -1,7 +1,7 @@
 import React from 'react';
 import ServiceStatusCard from './ServiceStatusCard';
 
-const BackendStatusSection = () => {
+const BackendStatusSection = React.memo(() => {
   const backendServices = [
     {
       name: 'Order Service',
@@ -41,6 +41,8 @@ const BackendStatusSection = () => {
       </div>
     </div>
   );
-};
+});
+
+BackendStatusSection.displayName = 'BackendStatusSection';
 
 export default BackendStatusSection;

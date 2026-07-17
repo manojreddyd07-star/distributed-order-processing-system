@@ -2,7 +2,7 @@ import React from 'react';
 import OrderRow from './OrderRow';
 import './OrderTable.css';
 
-const OrderTable = ({ orders }) => {
+const OrderTable = React.memo(({ orders }) => {
   return (
     <div className="order-table-container">
       <table className="order-table">
@@ -23,6 +23,8 @@ const OrderTable = ({ orders }) => {
       </table>
     </div>
   );
-};
+});
+
+OrderTable.displayName = 'OrderTable';
 
 export default OrderTable;

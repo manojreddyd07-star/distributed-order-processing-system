@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import OrderTable from '../../components/orders/OrderTable';
 import OrderEventTimeline from '../../components/orders/OrderEventTimeline';
 import SearchFilters from '../../components/orders/SearchFilters';
@@ -16,11 +16,8 @@ const OrdersPage = () => {
   const [totalElements, setTotalElements] = useState(0);
   const [searchParams, setSearchParams] = useState({});
 
-  useEffect(() => {
-    fetchOrders();
-  }, [currentPage, pageSize, searchParams]);
-
-  const fetchOrders = async () => {
+  // Memoize the fetch function to avoid recreating it on every render
+  const fetchOrders = useCallback(async () => {
     setIsLoading(true);
     setError(null);
 
@@ -41,26 +38,67 @@ const OrdersPage = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentPage, pageSize, searchParams]);
 
-  const handleSearch = (filters) => {
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
+
+  // Memoize callbacks to prevent unnecessary re-renders
+  const handleSearch = useCallback((filters) => {
     setSearchParams(filters);
     setCurrentPage(0); // Reset to first page on new search
-  };
+  }, []);
 
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
     setSearchParams({});
     setCurrentPage(0);
-  };
+  }, []);
 
-  const handlePageChange = (newPage) => {
+  const handlePageChange = useCallback((newPage) => {
     setCurrentPage(newPage);
-  };
+  }, []);
 
-  const handlePageSizeChange = (newSize) => {
+  const handlePageSizeChange = useCallback((newSize) => {
     setPageSize(newSize);
     setCurrentPage(0); // Reset to first page when changing page size
-  };
+  }, []);
+
+  // Memoize the content to render
+  const content = useMemo(() => {
+    if (isLoading) {
+      return <div className="loading-message">Loading orders...</div>;
+    }
+    
+    if (error) {
+      return (
+        <div className="error-message">
+          <p>{error}</p>
+          <button onClick={fetchOrders} className="retry-button">
+            Retry
+          </button>
+        </div>
+      );
+    }
+    
+    if (orders.length === 0) {
+      return <div className="empty-message">No orders found</div>;
+    }
+    
+    return (
+      <>
+        <OrderTable orders={orders} />
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalElements={totalElements}
+          pageSize={pageSize}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+        />
+      </>
+    );
+  }, [isLoading, error, orders, currentPage, totalPages, totalElements, pageSize, handlePageChange, handlePageSizeChange, fetchOrders]);
 
   return (
     <div className="orders-page">
@@ -71,30 +109,7 @@ const OrdersPage = () => {
 
       <SearchFilters onSearch={handleSearch} onReset={handleReset} />
 
-      {isLoading ? (
-        <div className="loading-message">Loading orders...</div>
-      ) : error ? (
-        <div className="error-message">
-          <p>{error}</p>
-          <button onClick={fetchOrders} className="retry-button">
-            Retry
-          </button>
-        </div>
-      ) : orders.length === 0 ? (
-        <div className="empty-message">No orders found</div>
-      ) : (
-        <>
-          <OrderTable orders={orders} />
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalElements={totalElements}
-            pageSize={pageSize}
-            onPageChange={handlePageChange}
-            onPageSizeChange={handlePageSizeChange}
-          />
-        </>
-      )}
+      {content}
 
       <OrderEventTimeline />
     </div>
