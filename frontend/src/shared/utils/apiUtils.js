@@ -40,17 +40,32 @@ export const throttle = (func, limit = 300) => {
 };
 
 /**
- * Simple in-memory cache implementation
+ * Enhanced in-memory cache implementation with LRU eviction
  */
-class SimpleCache {
-  constructor(ttl = 60000) { // Default TTL: 1 minute
+class EnhancedCache {
+  constructor(ttl = 60000, maxSize = 100) {
     this.cache = new Map();
     this.ttl = ttl;
+    this.maxSize = maxSize;
+    this.accessOrder = [];
   }
 
   set(key, value) {
+    // Remove oldest entry if cache is full
+    if (this.cache.size >= this.maxSize && !this.cache.has(key)) {
+      const oldestKey = this.accessOrder.shift();
+      this.cache.delete(oldestKey);
+    }
+
     const expiry = Date.now() + this.ttl;
     this.cache.set(key, { value, expiry });
+    
+    // Update access order
+    const index = this.accessOrder.indexOf(key);
+    if (index > -1) {
+      this.accessOrder.splice(index, 1);
+    }
+    this.accessOrder.push(key);
   }
 
   get(key) {
@@ -62,7 +77,18 @@ class SimpleCache {
     
     if (Date.now() > item.expiry) {
       this.cache.delete(key);
+      const index = this.accessOrder.indexOf(key);
+      if (index > -1) {
+        this.accessOrder.splice(index, 1);
+      }
       return null;
+    }
+    
+    // Update access order for LRU
+    const index = this.accessOrder.indexOf(key);
+    if (index > -1) {
+      this.accessOrder.splice(index, 1);
+      this.accessOrder.push(key);
     }
     
     return item.value;
@@ -74,18 +100,45 @@ class SimpleCache {
 
   clear() {
     this.cache.clear();
+    this.accessOrder = [];
   }
 
   delete(key) {
     this.cache.delete(key);
+    const index = this.accessOrder.indexOf(key);
+    if (index > -1) {
+      this.accessOrder.splice(index, 1);
+    }
+  }
+
+  // Clear expired entries
+  clearExpired() {
+    const now = Date.now();
+    for (const [key, item] of this.cache.entries()) {
+      if (now > item.expiry) {
+        this.cache.delete(key);
+        const index = this.accessOrder.indexOf(key);
+        if (index > -1) {
+          this.accessOrder.splice(index, 1);
+        }
+      }
+    }
   }
 }
 
-// Create a global cache instance with 5 minute TTL
-export const apiCache = new SimpleCache(300000);
+// Create a global cache instance with 5 minute TTL and max 100 entries
+export const apiCache = new EnhancedCache(300000, 100);
+
+// Clear expired entries every minute
+setInterval(() => apiCache.clearExpired(), 60000);
 
 /**
- * Cache wrapper for API calls
+ * Request deduplication - prevents duplicate requests for the same key
+ */
+const pendingRequests = new Map();
+
+/**
+ * Cache wrapper for API calls with request deduplication
  * 
  * @param {string} cacheKey - The unique key for this API call
  * @param {Function} apiCall - The API call function to execute
@@ -93,11 +146,33 @@ export const apiCache = new SimpleCache(300000);
  * @returns {Promise} The API response
  */
 export const cachedApiCall = async (cacheKey, apiCall, useCache = true) => {
+  // Check cache first
   if (useCache && apiCache.has(cacheKey)) {
     return apiCache.get(cacheKey);
   }
   
-  const response = await apiCall();
+  // Check for pending request (deduplication)
+  if (pendingRequests.has(cacheKey)) {
+    return pendingRequests.get(cacheKey);
+  }
+  
+  // Create new request
+  const requestPromise = apiCall()
+    .then(response => {
+      if (useCache) {
+        apiCache.set(cacheKey, response);
+      }
+      pendingRequests.delete(cacheKey);
+      return response;
+    })
+    .catch(error => {
+      pendingRequests.delete(cacheKey);
+      throw error;
+    });
+  
+  pendingRequests.set(cacheKey, requestPromise);
+  
+  return requestPromise;
   
   if (useCache) {
     apiCache.set(cacheKey, response);

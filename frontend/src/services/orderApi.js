@@ -3,7 +3,7 @@ import { cachedApiCall } from '../shared/utils/apiUtils';
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
 
 /**
- * Common fetch wrapper with error handling
+ * Common fetch wrapper with error handling and abort signal support
  */
 const fetchWithErrorHandling = async (url, options = {}) => {
   try {
@@ -27,6 +27,10 @@ const fetchWithErrorHandling = async (url, options = {}) => {
 
     return await response.json();
   } catch (error) {
+    // Re-throw abort errors as-is
+    if (error.name === 'AbortError') {
+      throw error;
+    }
     console.error('API Error:', error);
     throw error;
   }
@@ -79,9 +83,10 @@ export const getOrderById = async (orderId) => {
  * @param {number} searchParams.size - Page size (default: 10)
  * @param {string} searchParams.sortBy - Sort field (default: createdAt)
  * @param {string} searchParams.sortDirection - Sort direction ASC/DESC (default: DESC)
+ * @param {AbortSignal} signal - Optional abort signal for request cancellation
  * @returns {Promise<Object>} Paginated order response
  */
-export const searchOrders = async (searchParams = {}) => {
+export const searchOrders = async (searchParams = {}, signal = null) => {
   const params = new URLSearchParams();
   
   // Add search parameters
@@ -109,7 +114,7 @@ export const searchOrders = async (searchParams = {}) => {
   
   return cachedApiCall(
     cacheKey,
-    () => fetchWithErrorHandling(`${API_BASE_URL}/orders/search?${queryString}`),
+    () => fetchWithErrorHandling(`${API_BASE_URL}/orders/search?${queryString}`, { signal }),
     // Cache search results for 30 seconds only
     true
   );

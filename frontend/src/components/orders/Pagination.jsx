@@ -1,7 +1,7 @@
 import React from 'react';
 import './Pagination.css';
 
-const Pagination = ({ currentPage, totalPages, totalElements, pageSize, onPageChange, onPageSizeChange }) => {
+const Pagination = React.memo(({ currentPage, totalPages, totalElements, pageSize, onPageChange, onPageSizeChange }) => {
   const handlePrevious = () => {
     if (currentPage > 0) {
       onPageChange(currentPage - 1);
@@ -128,6 +128,8 @@ const Pagination = ({ currentPage, totalPages, totalElements, pageSize, onPageCh
       </div>
     </div>
   );
-};
+});
+
+Pagination.displayName = 'Pagination';
 
 export default Pagination;

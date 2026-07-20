@@ -16,33 +16,48 @@ const OrdersPage = () => {
   const [totalElements, setTotalElements] = useState(0);
   const [searchParams, setSearchParams] = useState({});
 
-  // Memoize the fetch function to avoid recreating it on every render
-  const fetchOrders = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const params = {
-        ...searchParams,
-        page: currentPage,
-        size: pageSize
-      };
-      
-      const response = await searchOrders(params);
-      
-      setOrders(response.content);
-      setTotalPages(response.totalPages);
-      setTotalElements(response.totalElements);
-    } catch (err) {
-      setError(err.message || 'Failed to load orders');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [currentPage, pageSize, searchParams]);
-
+  // Fetch orders with abort controller to cancel stale requests
   useEffect(() => {
+    const abortController = new AbortController();
+    
+    const fetchOrders = async () => {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const params = {
+          ...searchParams,
+          page: currentPage,
+          size: pageSize
+        };
+        
+        const response = await searchOrders(params, abortController.signal);
+        
+        // Only update state if request wasn't aborted
+        if (!abortController.signal.aborted) {
+          setOrders(response.content);
+          setTotalPages(response.totalPages);
+          setTotalElements(response.totalElements);
+        }
+      } catch (err) {
+        // Ignore abort errors
+        if (err.name !== 'AbortError' && !abortController.signal.aborted) {
+          setError(err.message || 'Failed to load orders');
+        }
+      } finally {
+        if (!abortController.signal.aborted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
     fetchOrders();
-  }, [fetchOrders]);
+    
+    // Cleanup: abort request if component unmounts or dependencies change
+    return () => {
+      abortController.abort();
+    };
+  }, [currentPage, pageSize, searchParams]);
 
   // Memoize callbacks to prevent unnecessary re-renders
   const handleSearch = useCallback((filters) => {
@@ -74,7 +89,7 @@ const OrdersPage = () => {
       return (
         <div className="error-message">
           <p>{error}</p>
-          <button onClick={fetchOrders} className="retry-button">
+          <button onClick={() => window.location.reload()} className="retry-button">
             Retry
           </button>
         </div>

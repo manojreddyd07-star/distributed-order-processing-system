@@ -8,13 +8,17 @@ spring:
     password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
     hikari:
-      maximum-pool-size: 20
-      minimum-idle: 10
-      connection-timeout: 20000
-      idle-timeout: 300000
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
       max-lifetime: 1800000
       leak-detection-threshold: 60000
       pool-name: PaymentServiceHikariCP
+      connection-test-query: SELECT 1
+      validation-timeout: 5000
+      keepalive-time: 300000
+      auto-commit: false
   
   jpa:
     hibernate:
@@ -28,7 +32,7 @@ spring:
         # Enable batch processing
         jdbc:
           batch_size: 50
-          fetch_size: 50
+          fetch_size: 100
         order_inserts: true
         order_updates: true
         batch_versioned_data: true
@@ -36,6 +40,10 @@ spring:
         cache:
           use_second_level_cache: false
           use_query_cache: false
+        # Statement caching
+        statement:
+          fetch_size: 100
+        generate_statistics: false
     open-in-view: false
   
   flyway:
@@ -60,8 +68,19 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       auto-offset-reset: earliest
       enable-auto-commit: false
+      max-poll-records: 100
+      fetch-min-size: 1024
+      fetch-max-wait-ms: 500
       properties:
         spring.json.trusted.packages: "*"
+        max.poll.interval.ms: 300000
+        session.timeout.ms: 45000
+        heartbeat.interval.ms: 15000
+        max.partition.fetch.bytes: 1048576
+    listener:
+      concurrency: 3
+      ack-mode: manual
+      poll-timeout: 3000
 
 server:
   port: ${SERVER_PORT:8082}
@@ -85,6 +104,6 @@ management:
 
 logging:
   level:
-    com.project.payment: DEBUG
+    com.project.payment: INFO
     org.springframework.kafka: INFO
-    org.hibernate.SQL: DEBUG
+    org.hibernate.SQL: WARN
