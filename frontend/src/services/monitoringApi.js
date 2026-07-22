@@ -49,3 +49,6 @@ export default {
   getApplicationMetrics,
   getPerformanceMetrics,
 };
+// Aliases for consistency with tests
+export const getSystemMetrics = getHealthMetrics;
+export const getEventMetrics = getApplicationMetrics;

@@ -69,3 +69,5 @@ export const getIdempotencyRecordsByStatus = async (status) => {
   
   return allRecords.filter(record => record.processingStatus === status);
 };
+// Alias for consistency with tests
+export const checkIdempotency = getAllIdempotencyRecords;

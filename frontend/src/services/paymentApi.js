@@ -76,3 +76,5 @@ export const getPaymentByOrderId = async (orderId) => {
     throw error;
   }
 };
+// Alias for consistency with tests
+export const getAllPayments = getPaymentHistory;

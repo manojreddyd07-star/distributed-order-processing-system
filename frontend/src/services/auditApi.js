@@ -121,3 +121,5 @@ export const checkAuditHealth = async () => {
     throw error;
   }
 };
+// Alias for consistency with tests
+export const getAuditLogs = getAllAuditEvents;

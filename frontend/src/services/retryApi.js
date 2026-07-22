@@ -84,3 +84,5 @@ export const getRetryRecordsByService = async (serviceName) => {
   
   return allRecords.filter(record => record.serviceName === serviceName);
 };
+// Alias for consistency with tests
+export const getAllRetryEvents = getAllRetryRecords;

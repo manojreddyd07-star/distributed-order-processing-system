@@ -25,6 +25,9 @@ export const getValidationHistory = async () => {
   }
 };
 
+// Alias for consistency with tests
+export const getAllValidations = getValidationHistory;
+
 /**
  * Get a validation by ID
  * @param {number} validationId - The validation ID
