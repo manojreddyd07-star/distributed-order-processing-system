@@ -1,36 +1,40 @@
 package com.project.validation.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.project.validation.dto.ReplayRequest;
-import com.project.validation.dto.ReplayResponse;
+import com.project.common.dto.ReplayRequest;
+import com.project.common.dto.ReplayResponse;
+import com.project.common.service.BaseEventReplayService;
 import com.project.validation.entity.FailedEventEntity;
 import com.project.validation.repository.FailedEventRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
 @Service
-public class EventReplayService {
-    
-    private static final Logger logger = LoggerFactory.getLogger(EventReplayService.class);
-    
-    private final FailedEventRepository failedEventRepository;
-    private final KafkaTemplate<String, Object> kafkaTemplate;
-    private final ObjectMapper objectMapper;
+public class EventReplayService extends BaseEventReplayService<FailedEventEntity, FailedEventRepository> {
     
     @Autowired
     public EventReplayService(FailedEventRepository failedEventRepository,
-                             KafkaTemplate<String, Object> kafkaTemplate,
-                             ObjectMapper objectMapper) {
-        this.failedEventRepository = failedEventRepository;
-        this.kafkaTemplate = kafkaTemplate;
-        this.objectMapper = objectMapper;
+                             KafkaTemplate<String, Object> kafkaTemplate) {
+        super(failedEventRepository, kafkaTemplate);
     }
+    
+    @Override
+    protected Optional<FailedEventEntity> findByEventId(String eventId) {
+        return failedEventRepository.findByEventId(eventId);
+    }
+    
+    @Override
+    protected String getEventType(FailedEventEntity failedEvent) {
+        return failedEvent.getEventType();
+    }
+    
+    @Override
+    protected String getPayload(FailedEventEntity failedEvent) {
+        return failedEvent.getPayload();
+    }
+}
     
     /**
      * Replay a failed event by republishing it to the specified Kafka topic

@@ -1,53 +1,44 @@
 import React from 'react';
+import BaseChart from '../../shared/components/BaseChart';
 import './LatencyChart.css';
 
 const LatencyChart = ({ latencyData }) => {
-  if (!latencyData) {
+  const renderContent = () => {
+    const {
+      averageProcessingTimeMs,
+      averageProcessingTimeSeconds,
+      minProcessingTimeMs,
+      maxProcessingTimeMs
+    } = latencyData;
+
+    // Calculate relative heights for visualization
+    const maxValue = Math.max(minProcessingTimeMs, averageProcessingTimeMs, maxProcessingTimeMs, 1);
+    const minHeight = (minProcessingTimeMs / maxValue) * 100;
+    const avgHeight = (averageProcessingTimeMs / maxValue) * 100;
+    const maxHeight = (maxProcessingTimeMs / maxValue) * 100;
+
+    // Determine latency status
+    const getLatencyStatus = (avgMs) => {
+      if (avgMs < 100) return { status: 'excellent', color: '#28a745', label: 'Excellent' };
+      if (avgMs < 300) return { status: 'good', color: '#20c997', label: 'Good' };
+      if (avgMs < 500) return { status: 'fair', color: '#ffc107', label: 'Fair' };
+      if (avgMs < 1000) return { status: 'slow', color: '#fd7e14', label: 'Slow' };
+      return { status: 'critical', color: '#dc3545', label: 'Critical' };
+    };
+
+    const latencyStatus = getLatencyStatus(averageProcessingTimeMs);
+
     return (
-      <div className="latency-chart">
-        <h3>Latency Metrics</h3>
-        <p className="no-data">No data available</p>
-      </div>
-    );
-  }
-
-  const {
-    averageProcessingTimeMs,
-    averageProcessingTimeSeconds,
-    minProcessingTimeMs,
-    maxProcessingTimeMs
-  } = latencyData;
-
-  // Calculate relative heights for visualization
-  const maxValue = Math.max(minProcessingTimeMs, averageProcessingTimeMs, maxProcessingTimeMs, 1);
-  const minHeight = (minProcessingTimeMs / maxValue) * 100;
-  const avgHeight = (averageProcessingTimeMs / maxValue) * 100;
-  const maxHeight = (maxProcessingTimeMs / maxValue) * 100;
-
-  // Determine latency status
-  const getLatencyStatus = (avgMs) => {
-    if (avgMs < 100) return { status: 'excellent', color: '#28a745', label: 'Excellent' };
-    if (avgMs < 300) return { status: 'good', color: '#20c997', label: 'Good' };
-    if (avgMs < 500) return { status: 'fair', color: '#ffc107', label: 'Fair' };
-    if (avgMs < 1000) return { status: 'slow', color: '#fd7e14', label: 'Slow' };
-    return { status: 'critical', color: '#dc3545', label: 'Critical' };
-  };
-
-  const latencyStatus = getLatencyStatus(averageProcessingTimeMs);
-
-  return (
-    <div className="latency-chart">
-      <h3>⚡ Latency Metrics</h3>
-
-      <div className="latency-status" style={{ borderLeftColor: latencyStatus.color }}>
-        <div className="status-indicator" style={{ backgroundColor: latencyStatus.color }}>
-          {latencyStatus.label}
+      <>
+        <div className="latency-status" style={{ borderLeftColor: latencyStatus.color }}>
+          <div className="status-indicator" style={{ backgroundColor: latencyStatus.color }}>
+            {latencyStatus.label}
+          </div>
+          <div className="status-text">System Performance</div>
         </div>
-        <div className="status-text">System Performance</div>
-      </div>
 
-      <div className="latency-summary">
-        <div className="latency-card primary">
+        <div className="latency-summary">
+          <div className="latency-card primary">
           <div className="card-icon">📈</div>
           <div className="card-content">
             <div className="card-label">Average Latency</div>
@@ -132,7 +123,18 @@ const LatencyChart = ({ latencyData }) => {
           <span className="info-value">{(maxProcessingTimeMs - minProcessingTimeMs)} ms</span>
         </div>
       </div>
-    </div>
+      </>
+    );
+  };
+
+  return (
+    <BaseChart 
+      title="Latency Metrics" 
+      icon="⚡" 
+      data={latencyData}
+    >
+      {renderContent()}
+    </BaseChart>
   );
 };
 
