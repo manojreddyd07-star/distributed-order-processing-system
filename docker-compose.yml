@@ -188,6 +188,12 @@ services:
     networks:
       - order-processing-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
 
   # Validation Service
   validation-service:
@@ -210,6 +216,12 @@ services:
     networks:
       - order-processing-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8081/actuator/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
 
   # Payment Service
   payment-service:
@@ -233,6 +245,12 @@ services:
     networks:
       - order-processing-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8082/actuator/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
 
   # Inventory Service
   inventory-service:
@@ -256,6 +274,12 @@ services:
     networks:
       - order-processing-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8083/actuator/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
 
   # Fulfillment Service
   fulfillment-service:
@@ -279,6 +303,12 @@ services:
     networks:
       - order-processing-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8084/actuator/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
 
   # Monitoring Service
   monitoring-service:
@@ -286,7 +316,6 @@ services:
       context: ./backend
       dockerfile: monitoring-service/Dockerfile
     container_name: monitoring-service
-  postgres_monitoring_data:
     depends_on:
       postgres-monitoring:
         condition: service_healthy
@@ -318,6 +347,35 @@ services:
     networks:
       - order-processing-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8086/actuator/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+
+  # Frontend Application
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    depends_on:
+      order-service:
+        condition: service_started
+    ports:
+      - "3000:80"
+    environment:
+      REACT_APP_API_URL: http://localhost:8080
+    networks:
+      - order-processing-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
 
 volumes:
   postgres_data:
@@ -325,6 +383,7 @@ volumes:
   postgres_payment_data:
   postgres_inventory_data:
   postgres_fulfillment_data:
+  postgres_monitoring_data:
 
 networks:
   order-processing-network:

@@ -1,33 +1,53 @@
-# Build stage
+# Build stage - Optimized with layer caching
 FROM maven:3.9-eclipse-temurin-17 AS build
 WORKDIR /app
 
-# Copy and build common-lib first
+# Copy pom files first for better layer caching
 COPY common-lib/pom.xml common-lib/pom.xml
-COPY common-lib/src common-lib/src
-RUN cd common-lib && mvn clean install -DskipTests
-
-# Copy and build payment-service
 COPY payment-service/pom.xml payment-service/pom.xml
-COPY payment-service/src payment-service/src
-RUN cd payment-service && mvn clean package -DskipTests
 
-# Runtime stage
+# Download dependencies (this layer will be cached if pom.xml doesn't change)
+RUN cd common-lib && mvn dependency:go-offline -B
+RUN cd payment-service && mvn dependency:go-offline -B
+
+# Copy source code
+COPY common-lib/src common-lib/src
+COPY payment-service/src payment-service/src
+
+# Build common-lib and payment-service
+RUN cd common-lib && mvn clean install -DskipTests -B
+RUN cd payment-service && mvn clean package -DskipTests -B
+
+# Runtime stage - Optimized with security best practices
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
-COPY --from=build /app/payment-service/target/*.jar app.jar
+
+# Create non-root user for security
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
+# Copy jar from build stage
+COPY --from=build --chown=appuser:appgroup /app/payment-service/target/*.jar app.jar
+
+# Switch to non-root user
+USER appuser
+
 EXPOSE 8082
 
-# Optimized JVM settings for performance
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:8082/actuator/health || exit 1
+
+# Optimized JVM settings for production
 ENTRYPOINT ["java", \
+  "-XX:+UseContainerSupport", \
+  "-XX:MaxRAMPercentage=75.0", \
+  "-XX:InitialRAMPercentage=50.0", \
   "-XX:+UseG1GC", \
   "-XX:MaxGCPauseMillis=200", \
   "-XX:+ParallelRefProcEnabled", \
   "-XX:+UseStringDeduplication", \
-  "-Xms512m", \
-  "-Xmx1024m", \
-  "-XX:MetaspaceSize=128m", \
-  "-XX:MaxMetaspaceSize=256m", \
-  "-XX:+HeapDumpOnOutOfMemoryError", \
-  "-XX:HeapDumpPath=/tmp/heapdump.hprof", \
+  "-XX:+OptimizeStringConcat", \
+  "-XX:+UseCompressedOops", \
+  "-Djava.security.egd=file:/dev/./urandom", \
+  "-Dspring.backgroundpreinitializer.ignore=true", \
   "-jar", "app.jar"]
