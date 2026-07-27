@@ -50,3 +50,6 @@ export const getInventoryByProductId = async (productId) => {
     throw error;
   }
 };
+
+// Alias for consistency with tests
+export const getAllInventoryItems = getAllInventory;

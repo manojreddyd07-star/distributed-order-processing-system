@@ -44,10 +44,24 @@ export const getPerformanceMetrics = async (minutes = 5) => {
   }
 };
 
+/**
+ * Get service health status for all services
+ */
+export const getServiceHealth = async () => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/service-health`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching service health:', error);
+    throw error;
+  }
+};
+
 export default {
   getHealthMetrics,
   getApplicationMetrics,
   getPerformanceMetrics,
+  getServiceHealth,
 };
 // Aliases for consistency with tests
 export const getSystemMetrics = getHealthMetrics;

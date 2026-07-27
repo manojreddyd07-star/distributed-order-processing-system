@@ -4,12 +4,18 @@ import HealthGrid from '../../components/monitoring/HealthGrid';
 import ThroughputChart from '../../components/monitoring/ThroughputChart';
 import LatencyChart from '../../components/monitoring/LatencyChart';
 import FailureMetricsCard from '../../components/monitoring/FailureMetricsCard';
-import { getHealthMetrics, getApplicationMetrics, getPerformanceMetrics } from '../../services/monitoringApi';
+import { 
+  getSystemMetrics, 
+  getEventMetrics, 
+  getServiceHealth,
+  getPerformanceMetrics 
+} from '../../services/monitoringApi';
 import './MonitoringPage.css';
 
 const MonitoringPage = () => {
   const [healthData, setHealthData] = useState(null);
   const [metricsData, setMetricsData] = useState(null);
+  const [serviceHealthData, setServiceHealthData] = useState(null);
   const [performanceData, setPerformanceData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -20,14 +26,16 @@ const MonitoringPage = () => {
   const fetchData = async () => {
     try {
       setError(null);
-      const [health, metrics, performance] = await Promise.all([
-        getHealthMetrics(),
-        getApplicationMetrics(),
+      const [health, metrics, serviceHealth, performance] = await Promise.all([
+        getSystemMetrics(),
+        getEventMetrics(),
+        getServiceHealth(),
         getPerformanceMetrics(timeWindow),
       ]);
       
       setHealthData(health);
       setMetricsData(metrics);
+      setServiceHealthData(serviceHealth);
       setPerformanceData(performance);
       setLastUpdated(new Date());
       setLoading(false);
@@ -85,7 +93,7 @@ const MonitoringPage = () => {
   }
 
   return (
-    <div className="monitoring-page">
+    <div className="monitoring-page" data-testid="monitoring-page">
       <div className="monitoring-header">
         <div>
           <h1>System Monitoring Dashboard</h1>
