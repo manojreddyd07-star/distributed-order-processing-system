@@ -164,7 +164,9 @@ class KafkaDLQScenarioIntegrationTest {
         // Assert - Wait for failed event to be stored in database
         await().atMost(10, TimeUnit.SECONDS)
             .untilAsserted(() -> {
-                List<FailedEventEntity> failedEvents = failedEventRepository.findByServiceName("validation-service");
+                List<FailedEventEntity> failedEvents = failedEventRepository.findAll().stream()
+                    .filter(e -> "validation-service".equals(e.getServiceName()))
+                    .toList();
                 assertThat(failedEvents).isNotEmpty();
                 
                 FailedEventEntity storedEvent = failedEvents.stream()
@@ -232,7 +234,9 @@ class KafkaDLQScenarioIntegrationTest {
         // Assert - Verify all failed events are stored
         await().atMost(15, TimeUnit.SECONDS)
             .untilAsserted(() -> {
-                List<FailedEventEntity> failedEvents = failedEventRepository.findByServiceName("validation-service");
+                List<FailedEventEntity> failedEvents = failedEventRepository.findAll().stream()
+                    .filter(e -> "validation-service".equals(e.getServiceName()))
+                    .toList();
                 assertThat(failedEvents.size()).isGreaterThanOrEqualTo(3);
             });
 
@@ -265,10 +269,8 @@ class KafkaDLQScenarioIntegrationTest {
         // Assert - Verify payload can be retrieved and deserialized
         await().atMost(10, TimeUnit.SECONDS)
             .untilAsserted(() -> {
-                List<FailedEventEntity> failedEvents = failedEventRepository.findByEventId(failedOrder.getEventId());
-                assertThat(failedEvents).isNotEmpty();
-                
-                FailedEventEntity storedEvent = failedEvents.get(0);
+                FailedEventEntity storedEvent = failedEventRepository.findByEventId(failedOrder.getEventId()).orElse(null);
+                assertThat(storedEvent).isNotNull();
                 assertThat(storedEvent.getPayload()).isNotNull();
                 
                 // Verify payload can be deserialized back to OrderCreatedEvent
@@ -302,10 +304,8 @@ class KafkaDLQScenarioIntegrationTest {
         // Assert - Verify timestamp is set correctly
         await().atMost(10, TimeUnit.SECONDS)
             .untilAsserted(() -> {
-                List<FailedEventEntity> failedEvents = failedEventRepository.findByEventId(failedOrder.getEventId());
-                assertThat(failedEvents).isNotEmpty();
-                
-                FailedEventEntity storedEvent = failedEvents.get(0);
+                FailedEventEntity storedEvent = failedEventRepository.findByEventId(failedOrder.getEventId()).orElse(null);
+                assertThat(storedEvent).isNotNull();
                 assertThat(storedEvent.getFailedAt()).isAfter(beforePublish.minusSeconds(1));
                 assertThat(storedEvent.getFailedAt()).isBefore(LocalDateTime.now().plusSeconds(1));
             });

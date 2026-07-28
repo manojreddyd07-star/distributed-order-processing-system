@@ -1,6 +1,5 @@
 package com.project.validation.consumer;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.common.config.DlqTopicConfig;
 import com.project.common.events.FailedEvent;
 import com.project.validation.service.FailedEventService;
@@ -19,12 +18,10 @@ public class DlqConsumer {
     private static final Logger logger = LoggerFactory.getLogger(DlqConsumer.class);
     
     private final FailedEventService failedEventService;
-    private final ObjectMapper objectMapper;
     
     @Autowired
-    public DlqConsumer(FailedEventService failedEventService, ObjectMapper objectMapper) {
+    public DlqConsumer(FailedEventService failedEventService) {
         this.failedEventService = failedEventService;
-        this.objectMapper = objectMapper;
     }
     
     /**

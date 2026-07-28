@@ -14,6 +14,8 @@ public class FailedEvent {
     private String errorMessage;
     private String payload;
     private LocalDateTime failedAt;
+    private String originalTopic;
+    private Integer retryCount;
     
     // Default constructor
     public FailedEvent() {
@@ -77,6 +79,22 @@ public class FailedEvent {
     
     public void setFailedAt(LocalDateTime failedAt) {
         this.failedAt = failedAt;
+    }
+    
+    public String getOriginalTopic() {
+        return originalTopic;
+    }
+    
+    public void setOriginalTopic(String originalTopic) {
+        this.originalTopic = originalTopic;
+    }
+    
+    public Integer getRetryCount() {
+        return retryCount;
+    }
+    
+    public void setRetryCount(Integer retryCount) {
+        this.retryCount = retryCount;
     }
     
     @Override

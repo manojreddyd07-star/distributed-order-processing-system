@@ -4,7 +4,7 @@ import com.project.validation.entity.FailedEventEntity;
 import com.project.validation.repository.FailedEventRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

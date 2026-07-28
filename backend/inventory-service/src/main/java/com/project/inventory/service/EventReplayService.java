@@ -1,7 +1,5 @@
 package com.project.inventory.service;
 
-import com.project.common.dto.ReplayRequest;
-import com.project.common.dto.ReplayResponse;
 import com.project.common.service.BaseEventReplayService;
 import com.project.inventory.entity.FailedEventEntity;
 import com.project.inventory.repository.FailedEventRepository;

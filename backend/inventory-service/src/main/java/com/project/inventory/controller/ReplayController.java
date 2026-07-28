@@ -1,7 +1,7 @@
 package com.project.inventory.controller;
 
-import com.project.inventory.dto.ReplayRequest;
-import com.project.inventory.dto.ReplayResponse;
+import com.project.common.dto.ReplayRequest;
+import com.project.common.dto.ReplayResponse;
 import com.project.inventory.service.EventReplayService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

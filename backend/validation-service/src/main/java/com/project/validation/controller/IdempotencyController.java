@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/idempotency")
+@RequestMapping("/api/idempotency")
 @CrossOrigin(origins = "*")
 public class IdempotencyController {
 

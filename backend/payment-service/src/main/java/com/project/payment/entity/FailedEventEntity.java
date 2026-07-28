@@ -32,6 +32,15 @@ public class FailedEventEntity {
     @Column(name = "payload", nullable = false, columnDefinition = "TEXT")
     private String payload;
     
+    @Column(name = "original_topic", length = 255)
+    private String originalTopic;
+    
+    @Column(name = "retry_count")
+    private Integer retryCount;
+    
+    @Column(name = "status", length = 50)
+    private String status;
+    
     @Column(name = "failed_at", nullable = false, updatable = false)
     private LocalDateTime failedAt;
     
@@ -96,6 +105,42 @@ public class FailedEventEntity {
     
     public String getPayload() {
         return payload;
+    }
+    
+    public void setPayload(String payload) {
+        this.payload = payload;
+    }
+    
+    public String getOriginalTopic() {
+        return originalTopic;
+    }
+    
+    public void setOriginalTopic(String originalTopic) {
+        this.originalTopic = originalTopic;
+    }
+    
+    public Integer getRetryCount() {
+        return retryCount;
+    }
+    
+    public void setRetryCount(Integer retryCount) {
+        this.retryCount = retryCount;
+    }
+    
+    public String getStatus() {
+        return status;
+    }
+    
+    public void setStatus(String status) {
+        this.status = status;
+    }
+    
+    public LocalDateTime getFailedAt() {
+        return failedAt;
+    }
+    
+    public void setFailedAt(LocalDateTime failedAt) {
+        this.failedAt = failedAt;
     }
     
     public void setPayload(String payload) {

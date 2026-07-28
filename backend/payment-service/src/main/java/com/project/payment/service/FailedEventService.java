@@ -69,4 +69,22 @@ public class FailedEventService {
     public List<FailedEventEntity> getFailedEventsByType(String eventType) {
         return failedEventRepository.findByEventTypeOrderByFailedAtDesc(eventType);
     }
+    
+    /**
+     * Get failed event by ID
+     */
+    public FailedEventEntity getFailedEventById(Long id) {
+        return failedEventRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Failed event not found with id: " + id));
+    }
+    
+    /**
+     * Delete failed event
+     */
+    @Transactional
+    public void deleteFailedEvent(Long id) {
+        logger.info("Deleting failed event with ID: {}", id);
+        failedEventRepository.deleteById(id);
+        logger.info("Failed event deleted successfully - ID: {}", id);
+    }
 }

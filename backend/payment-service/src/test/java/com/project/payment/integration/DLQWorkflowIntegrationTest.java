@@ -29,7 +29,6 @@ import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.kafka.test.utils.ContainerTestUtils;
 import org.springframework.test.annotation.DirtiesContext;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -40,7 +39,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 
 /**
  * Integration Test for Dead Letter Queue (DLQ) Scenarios
@@ -71,7 +69,7 @@ class DLQWorkflowIntegrationTest {
     private ObjectMapper objectMapper;
 
     private KafkaTemplate<String, FailedEvent> dlqProducerTemplate;
-    private KafkaTemplate<String, OrderValidatedEvent> eventProducerTemplate;
+    // private KafkaTemplate<String, OrderValidatedEvent> eventProducerTemplate;
     
     private BlockingQueue<ConsumerRecord<String, FailedEvent>> dlqRecords;
     private KafkaMessageListenerContainer<String, FailedEvent> dlqContainer;
@@ -416,7 +414,7 @@ class DLQWorkflowIntegrationTest {
         producerProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
 
         dlqProducerTemplate = new KafkaTemplate<>(new DefaultKafkaProducerFactory<>(producerProps));
-        eventProducerTemplate = new KafkaTemplate<>(new DefaultKafkaProducerFactory<>(producerProps));
+        // eventProducerTemplate = new KafkaTemplate<>(new DefaultKafkaProducerFactory<>(producerProps));
     }
 
     private void setupConsumers() {

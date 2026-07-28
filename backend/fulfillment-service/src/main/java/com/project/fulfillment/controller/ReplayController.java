@@ -1,7 +1,7 @@
 package com.project.fulfillment.controller;
 
-import com.project.fulfillment.dto.ReplayRequest;
-import com.project.fulfillment.dto.ReplayResponse;
+import com.project.common.dto.ReplayRequest;
+import com.project.common.dto.ReplayResponse;
 import com.project.fulfillment.service.EventReplayService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

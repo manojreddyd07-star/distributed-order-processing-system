@@ -90,19 +90,19 @@ management:
 monitoring:
   services:
     order-service:
-      url: ${ORDER_SERVICE_URL:http://localhost:8081}
+      url: ${ORDER_SERVICE_URL:http://localhost:8080}
       health-endpoint: /actuator/health
     validation-service:
-      url: ${VALIDATION_SERVICE_URL:http://localhost:8082}
+      url: ${VALIDATION_SERVICE_URL:http://localhost:8081}
       health-endpoint: /actuator/health
     payment-service:
-      url: ${PAYMENT_SERVICE_URL:http://localhost:8083}
+      url: ${PAYMENT_SERVICE_URL:http://localhost:8082}
       health-endpoint: /actuator/health
     inventory-service:
-      url: ${INVENTORY_SERVICE_URL:http://localhost:8084}
+      url: ${INVENTORY_SERVICE_URL:http://localhost:8083}
       health-endpoint: /actuator/health
     fulfillment-service:
-      url: ${FULFILLMENT_SERVICE_URL:http://localhost:8085}
+      url: ${FULFILLMENT_SERVICE_URL:http://localhost:8084}
       health-endpoint: /actuator/health
   refresh-interval: 30000 # 30 seconds
 

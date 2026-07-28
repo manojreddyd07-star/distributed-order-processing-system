@@ -1,7 +1,7 @@
 package com.project.payment.controller;
 
-import com.project.payment.dto.ReplayRequest;
-import com.project.payment.dto.ReplayResponse;
+import com.project.common.dto.ReplayRequest;
+import com.project.common.dto.ReplayResponse;
 import com.project.payment.service.EventReplayService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

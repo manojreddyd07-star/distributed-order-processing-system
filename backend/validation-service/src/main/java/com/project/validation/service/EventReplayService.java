@@ -1,23 +1,32 @@
 package com.project.validation.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.common.dto.ReplayRequest;
 import com.project.common.dto.ReplayResponse;
 import com.project.common.service.BaseEventReplayService;
 import com.project.validation.entity.FailedEventEntity;
 import com.project.validation.repository.FailedEventRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
 @Service
 public class EventReplayService extends BaseEventReplayService<FailedEventEntity, FailedEventRepository> {
     
+    private static final Logger log = LoggerFactory.getLogger(EventReplayService.class);
+    private final ObjectMapper objectMapper;
+    
     @Autowired
     public EventReplayService(FailedEventRepository failedEventRepository,
-                             KafkaTemplate<String, Object> kafkaTemplate) {
+                             KafkaTemplate<String, Object> kafkaTemplate,
+                             ObjectMapper objectMapper) {
         super(failedEventRepository, kafkaTemplate);
+        this.objectMapper = objectMapper;
     }
     
     @Override
@@ -34,23 +43,22 @@ public class EventReplayService extends BaseEventReplayService<FailedEventEntity
     protected String getPayload(FailedEventEntity failedEvent) {
         return failedEvent.getPayload();
     }
-}
     
     /**
      * Replay a failed event by republishing it to the specified Kafka topic
      */
     @Transactional
     public ReplayResponse replayEvent(ReplayRequest request) {
-        logger.info("Replay request received: {}", request);
+        log.info("Replay request received: {}", request);
         
         // Validate request
         if (request.getEventId() == null || request.getEventId().trim().isEmpty()) {
-            logger.error("Replay request validation failed: eventId is required");
+            log.error("Replay request validation failed: eventId is required");
             return ReplayResponse.error("Event ID is required");
         }
         
         if (request.getReplayTopic() == null || request.getReplayTopic().trim().isEmpty()) {
-            logger.error("Replay request validation failed: replayTopic is required");
+            log.error("Replay request validation failed: replayTopic is required");
             return ReplayResponse.error("Replay topic is required");
         }
         
@@ -59,14 +67,14 @@ public class EventReplayService extends BaseEventReplayService<FailedEventEntity
             Optional<FailedEventEntity> failedEventOpt = failedEventRepository.findByEventId(request.getEventId());
             
             if (!failedEventOpt.isPresent()) {
-                logger.error("Failed event not found with eventId: {}", request.getEventId());
+                log.error("Failed event not found with eventId: {}", request.getEventId());
                 return ReplayResponse.error("Failed event not found with ID: " + request.getEventId());
             }
             
             FailedEventEntity failedEvent = failedEventOpt.get();
             
             // Log replay request
-            logger.info("Replaying event - EventID: {}, EventType: {}, ReplayTopic: {}",
+            log.info("Replaying event - EventID: {}, EventType: {}, ReplayTopic: {}",
                        request.getEventId(), failedEvent.getEventType(), request.getReplayTopic());
             
             // Parse the payload back to an object
@@ -76,7 +84,7 @@ public class EventReplayService extends BaseEventReplayService<FailedEventEntity
             kafkaTemplate.send(request.getReplayTopic(), eventPayload);
             
             // Log replay result
-            logger.info("Event replayed successfully - EventID: {}, Topic: {}", 
+            log.info("Event replayed successfully - EventID: {}, Topic: {}", 
                        request.getEventId(), request.getReplayTopic());
             
             // Return success response
@@ -87,7 +95,7 @@ public class EventReplayService extends BaseEventReplayService<FailedEventEntity
             );
             
         } catch (Exception e) {
-            logger.error("Failed to replay event - EventID: {}. Error: {}", 
+            log.error("Failed to replay event - EventID: {}. Error: {}", 
                         request.getEventId(), e.getMessage(), e);
             return ReplayResponse.error("Failed to replay event: " + e.getMessage());
         }

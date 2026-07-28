@@ -1,7 +1,7 @@
 package com.project.validation.controller;
 
-import com.project.validation.dto.ReplayRequest;
-import com.project.validation.dto.ReplayResponse;
+import com.project.common.dto.ReplayRequest;
+import com.project.common.dto.ReplayResponse;
 import com.project.validation.service.EventReplayService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

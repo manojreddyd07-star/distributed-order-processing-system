@@ -18,7 +18,6 @@ export const getAllInventory = async () => {
 export const getInventoryByProductId = async (productId) => {
   return get(API_BASE_URL, `/inventory/product/${productId}`);
 };
-  }
-};
+
 // Alias for consistency with tests
 export const getAllInventoryItems = getAllInventory;
