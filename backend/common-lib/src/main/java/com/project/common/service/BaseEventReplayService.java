@@ -4,6 +4,10 @@ import com.project.common.dto.ReplayRequest;
 import com.project.common.dto.ReplayResponse;
 import com.project.common.util.JsonUtil;
 import com.project.common.util.ValidationUtil;
+import com.project.common.events.InventoryReservedEvent;
+import com.project.common.events.OrderCreatedEvent;
+import com.project.common.events.OrderValidatedEvent;
+import com.project.common.events.PaymentCompletedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -64,7 +68,7 @@ public abstract class BaseEventReplayService<T, R> {
                        request.getEventId(), eventType, request.getReplayTopic());
             
             // Parse the payload back to an object
-            Object eventPayload = JsonUtil.fromJson(payload);
+            Object eventPayload = deserializeEvent(payload, eventType);
             
             // Republish event to the specified Kafka topic
             kafkaTemplate.send(request.getReplayTopic(), eventPayload);
@@ -101,4 +105,20 @@ public abstract class BaseEventReplayService<T, R> {
      * Get payload from failed event entity - to be implemented by subclasses
      */
     protected abstract String getPayload(T failedEvent);
+
+    private Object deserializeEvent(String payload, String eventType) {
+        if ("ORDER_CREATED".equals(eventType)) {
+            return JsonUtil.fromJson(payload, OrderCreatedEvent.class);
+        }
+        if ("ORDER_VALIDATED".equals(eventType)) {
+            return JsonUtil.fromJson(payload, OrderValidatedEvent.class);
+        }
+        if ("PAYMENT_COMPLETED".equals(eventType)) {
+            return JsonUtil.fromJson(payload, PaymentCompletedEvent.class);
+        }
+        if ("INVENTORY_RESERVED".equals(eventType)) {
+            return JsonUtil.fromJson(payload, InventoryReservedEvent.class);
+        }
+        throw new IllegalArgumentException("Unsupported replay event type: " + eventType);
+    }
 }

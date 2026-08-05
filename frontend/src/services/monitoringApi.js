@@ -1,14 +1,13 @@
-import axios from 'axios';
+import { get } from '../shared/api/apiClient';
 
-const API_BASE_URL = 'http://localhost:8086/api/monitoring';
+const API_BASE_URL = process.env.REACT_APP_MONITORING_API_URL || 'http://localhost:8086/api/monitoring';
 
 /**
  * Get health metrics for all services
  */
 export const getHealthMetrics = async () => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/health`);
-    return response.data;
+    return await get(API_BASE_URL, '/health');
   } catch (error) {
     console.error('Error fetching health metrics:', error);
     throw error;
@@ -20,8 +19,7 @@ export const getHealthMetrics = async () => {
  */
 export const getApplicationMetrics = async () => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/metrics`);
-    return response.data;
+    return await get(API_BASE_URL, '/metrics');
   } catch (error) {
     console.error('Error fetching application metrics:', error);
     throw error;
@@ -34,10 +32,8 @@ export const getApplicationMetrics = async () => {
  */
 export const getPerformanceMetrics = async (minutes = 5) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/performance-metrics`, {
-      params: { minutes }
-    });
-    return response.data;
+    const params = new URLSearchParams({ minutes: String(minutes) });
+    return await get(API_BASE_URL, `/performance-metrics?${params}`);
   } catch (error) {
     console.error('Error fetching performance metrics:', error);
     throw error;
@@ -49,8 +45,7 @@ export const getPerformanceMetrics = async (minutes = 5) => {
  */
 export const getServiceHealth = async () => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/health`);
-    return response.data;
+    return await get(API_BASE_URL, '/health');
   } catch (error) {
     console.error('Error fetching service health:', error);
     throw error;

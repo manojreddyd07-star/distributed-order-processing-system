@@ -91,7 +91,8 @@ public class ValidationService {
             validationEventProducer.publishValidationSuccessEvent(
                 savedResult.getOrderId(),
                 savedResult.getValidationStatus(),
-                savedResult.getValidationMessage()
+                savedResult.getValidationMessage(),
+                event.getTotalAmount()
             );
             logger.info("Published validation success event for order ID: {}", savedResult.getOrderId());
         } else {

@@ -17,8 +17,11 @@ public class ValidationController {
     private ValidationRepository validationRepository;
 
     @GetMapping
-    public ResponseEntity<List<ValidationEntity>> getAllValidations() {
-        List<ValidationEntity> validations = validationRepository.findAll();
+    public ResponseEntity<List<ValidationEntity>> getAllValidations(
+            @RequestParam(required = false) Long orderId) {
+        List<ValidationEntity> validations = orderId == null
+                ? validationRepository.findAll()
+                : validationRepository.findByOrderId(orderId);
         return ResponseEntity.ok(validations);
     }
 

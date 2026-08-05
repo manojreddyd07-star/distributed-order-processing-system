@@ -338,12 +338,12 @@ services:
       DB_USERNAME: postgres
       DB_PASSWORD: postgres
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-      SERVER_PORT: 8086
-      ORDER_SERVICE_URL: http://order-service:8080
-      VALIDATION_SERVICE_URL: http://validation-service:8081
+      ORDER_SERVICE_URL: http://order-service:8080/api
+      VALIDATION_SERVICE_URL: http://validation-service:8081/api
       PAYMENT_SERVICE_URL: http://payment-service:8082
       INVENTORY_SERVICE_URL: http://inventory-service:8083
       FULFILLMENT_SERVICE_URL: http://fulfillment-service:8084
+      SERVER_PORT: 8086
     networks:
       - order-processing-network
     restart: unless-stopped

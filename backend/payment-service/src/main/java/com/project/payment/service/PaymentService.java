@@ -38,6 +38,9 @@ public class PaymentService {
         
         // Extract amount from the event
         BigDecimal amount = event.getAmount();
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Validated order amount must be positive");
+        }
         
         // Create payment entity with default status
         PaymentEntity payment = new PaymentEntity(

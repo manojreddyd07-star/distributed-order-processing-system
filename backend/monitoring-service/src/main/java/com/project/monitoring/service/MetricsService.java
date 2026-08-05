@@ -85,8 +85,7 @@ public class MetricsService {
      */
     private ServiceHealthDTO collectDatabaseHealth() {
         try {
-            var health = healthEndpoint.health();
-            var dbHealth = health.getComponents().get("db");
+            var dbHealth = healthEndpoint.healthForPath("db");
             
             if (dbHealth != null) {
                 Map<String, Object> details = new HashMap<>();
@@ -120,8 +119,7 @@ public class MetricsService {
      */
     private ServiceHealthDTO collectKafkaHealth() {
         try {
-            var health = healthEndpoint.health();
-            var kafkaHealth = health.getComponents().get("kafka");
+            var kafkaHealth = healthEndpoint.healthForPath("kafka");
             
             if (kafkaHealth != null) {
                 Map<String, Object> details = new HashMap<>();
@@ -408,7 +406,7 @@ public class MetricsService {
             Timer.builder("monitoring.processing.latency")
                     .description("Event processing latency")
                     .register(meterRegistry)
-                    .record(java.time.Duration.ofMillis(avgMs.longValue()));
+                    .record(java.time.Duration.ofMillis((long) avgMs));
             
             log.info("Latency calculated - Avg: {} ms, Min: {} ms, Max: {} ms", avgMs, minProcessingTime, maxProcessingTime);
             

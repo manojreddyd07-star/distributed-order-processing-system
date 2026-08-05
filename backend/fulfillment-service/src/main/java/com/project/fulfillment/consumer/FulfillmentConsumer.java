@@ -34,7 +34,7 @@ public class FulfillmentConsumer {
      * @param event The InventoryReservedEvent
      * @param acknowledgment Kafka acknowledgment
      */
-    @KafkaListener(topics = "inventory-reserved-events", groupId = "fulfillment-service-group")
+    @KafkaListener(topics = "inventory-reserved", groupId = "fulfillment-service-group")
     public void consumeInventoryReservedEvent(InventoryReservedEvent event, Acknowledgment acknowledgment) {
         logger.info("========================================");
         logger.info("Received InventoryReservedEvent");
@@ -84,7 +84,7 @@ public class FulfillmentConsumer {
             // Forward failed event to retry topic
             logger.info("Forwarding failed event to retry topic: {}", event.getEventId());
             retryService.createRetryEvent(event, event.getEventType(), event.getEventId(), 
-                                         "inventory-reserved-events", e.getMessage());
+                                         "inventory-reserved", e.getMessage());
             
             // Acknowledge to prevent blocking the consumer
             acknowledgment.acknowledge();

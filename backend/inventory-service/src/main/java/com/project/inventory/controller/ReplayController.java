@@ -31,6 +31,9 @@ public class ReplayController {
     @PostMapping
     public ResponseEntity<ReplayResponse> replayEvent(@RequestBody ReplayRequest request) {
         logger.info("POST /api/replay - Replaying event: {}", request);
+        if (request == null || !"payment-completed-events".equals(request.getReplayTopic())) {
+            return ResponseEntity.badRequest().body(ReplayResponse.error("Invalid replay topic for inventory-service"));
+        }
         
         try {
             ReplayResponse response = eventReplayService.replayEvent(request);

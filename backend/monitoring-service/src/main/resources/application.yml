@@ -39,11 +39,9 @@ spring:
     consumer:
       group-id: monitoring-service-group
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       auto-offset-reset: earliest
       enable-auto-commit: false
-      properties:
-        spring.json.trusted.packages: "*"
 
 server:
   port: ${SERVER_PORT:8086}
@@ -53,11 +51,11 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,metrics,info,env,prometheus
+        include: health,metrics,info,prometheus
       base-path: /actuator
   endpoint:
     health:
-      show-details: always
+      show-details: never
       show-components: always
       probes:
         enabled: true
@@ -90,10 +88,10 @@ management:
 monitoring:
   services:
     order-service:
-      url: ${ORDER_SERVICE_URL:http://localhost:8080}
+      url: ${ORDER_SERVICE_URL:http://localhost:8080/api}
       health-endpoint: /actuator/health
     validation-service:
-      url: ${VALIDATION_SERVICE_URL:http://localhost:8081}
+      url: ${VALIDATION_SERVICE_URL:http://localhost:8081/api}
       health-endpoint: /actuator/health
     payment-service:
       url: ${PAYMENT_SERVICE_URL:http://localhost:8082}

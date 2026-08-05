@@ -1,6 +1,7 @@
 package com.project.common.events;
 
 import java.time.LocalDateTime;
+import java.math.BigDecimal;
 
 public class OrderValidatedEvent {
     
@@ -13,6 +14,7 @@ public class OrderValidatedEvent {
     private Long orderId;
     private String validationStatus;
     private String validationMessage;
+    private BigDecimal amount;
 
     // Default constructor
     public OrderValidatedEvent() {
@@ -21,12 +23,19 @@ public class OrderValidatedEvent {
     // All-args constructor
     public OrderValidatedEvent(String eventId, String eventType, LocalDateTime eventTimestamp,
                                Long orderId, String validationStatus, String validationMessage) {
+        this(eventId, eventType, eventTimestamp, orderId, validationStatus, validationMessage, null);
+    }
+
+    public OrderValidatedEvent(String eventId, String eventType, LocalDateTime eventTimestamp,
+                               Long orderId, String validationStatus, String validationMessage,
+                               BigDecimal amount) {
         this.eventId = eventId;
         this.eventType = eventType;
         this.eventTimestamp = eventTimestamp;
         this.orderId = orderId;
         this.validationStatus = validationStatus;
         this.validationMessage = validationMessage;
+        this.amount = amount;
     }
 
     // Getters and Setters
@@ -76,6 +85,14 @@ public class OrderValidatedEvent {
 
     public void setValidationMessage(String validationMessage) {
         this.validationMessage = validationMessage;
+    }
+
+    public BigDecimal getAmount() {
+        return amount;
+    }
+
+    public void setAmount(BigDecimal amount) {
+        this.amount = amount;
     }
 
     @Override

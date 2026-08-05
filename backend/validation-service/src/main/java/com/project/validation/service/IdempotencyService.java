@@ -29,7 +29,9 @@ public class IdempotencyService {
      * @return true if the event has already been processed
      */
     public boolean isEventProcessed(String eventId) {
-        boolean exists = idempotencyRepository.existsByEventId(eventId);
+        boolean exists = idempotencyRepository.findByEventId(eventId)
+                .map(record -> "PROCESSED".equals(record.getProcessingStatus()))
+                .orElse(false);
         if (exists) {
             logger.info("Event {} has already been processed by {}", eventId, SERVICE_NAME);
         }
@@ -45,17 +47,15 @@ public class IdempotencyService {
     @Transactional
     public void markEventAsProcessed(String eventId, String eventType, String processingStatus) {
         try {
-            IdempotencyRecordEntity record = new IdempotencyRecordEntity(
-                eventId,
-                eventType,
-                SERVICE_NAME,
-                processingStatus
-            );
+            IdempotencyRecordEntity record = idempotencyRepository.findByEventId(eventId)
+                .orElseGet(() -> new IdempotencyRecordEntity(eventId, eventType, SERVICE_NAME, processingStatus));
+            record.setEventType(eventType);
+            record.setProcessingStatus(processingStatus);
             idempotencyRepository.save(record);
             logger.info("Marked event {} as {} in {}", eventId, processingStatus, SERVICE_NAME);
         } catch (Exception e) {
             logger.error("Error marking event {} as processed: {}", eventId, e.getMessage());
-            // Don't throw exception - this is a best-effort tracking mechanism
+            throw new IllegalStateException("Unable to persist idempotency record", e);
         }
     }
     

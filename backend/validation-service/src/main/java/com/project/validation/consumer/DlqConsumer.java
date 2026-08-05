@@ -6,6 +6,7 @@ import com.project.validation.service.FailedEventService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
@@ -18,6 +19,9 @@ public class DlqConsumer {
     private static final Logger logger = LoggerFactory.getLogger(DlqConsumer.class);
     
     private final FailedEventService failedEventService;
+
+    @Value("${spring.application.name}")
+    private String serviceName;
     
     @Autowired
     public DlqConsumer(FailedEventService failedEventService) {
@@ -29,7 +33,7 @@ public class DlqConsumer {
      */
     @KafkaListener(
         topics = DlqTopicConfig.DLQ_TOPIC,
-        groupId = DlqTopicConfig.DLQ_CONSUMER_GROUP,
+        groupId = "${spring.application.name}-dlq-group",
         containerFactory = "kafkaListenerContainerFactory"
     )
     public void consumeFailedEvent(FailedEvent failedEvent) {
@@ -37,6 +41,9 @@ public class DlqConsumer {
                    failedEvent.getEventId(), failedEvent.getEventType(), failedEvent.getServiceName());
         
         try {
+            if (!serviceName.equals(failedEvent.getServiceName())) {
+                return;
+            }
             // Persist to database
             failedEventService.saveFailedEvent(
                 failedEvent.getEventId(),

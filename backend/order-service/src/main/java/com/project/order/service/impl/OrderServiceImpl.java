@@ -23,6 +23,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class OrderServiceImpl implements OrderService {
+    private static final java.util.Set<String> ALLOWED_SORT_FIELDS =
+            java.util.Set.of("id", "customerId", "orderStatus", "totalAmount", "createdAt");
     
     private final OrderRepository orderRepository;
     private final KafkaProducerService kafkaProducerService;
@@ -78,6 +80,19 @@ public class OrderServiceImpl implements OrderService {
     
     @Override
     public PagedResponse<OrderResponse> searchOrders(OrderSearchRequest searchRequest) {
+        if (searchRequest.getPage() == null || searchRequest.getPage() < 0) {
+            throw new IllegalArgumentException("Page must be zero or greater");
+        }
+        if (searchRequest.getSize() == null || searchRequest.getSize() < 1 || searchRequest.getSize() > 100) {
+            throw new IllegalArgumentException("Size must be between 1 and 100");
+        }
+        if (!ALLOWED_SORT_FIELDS.contains(searchRequest.getSortBy())) {
+            throw new IllegalArgumentException("Unsupported sort field: " + searchRequest.getSortBy());
+        }
+        if (searchRequest.getStartDate() != null && searchRequest.getEndDate() != null
+                && searchRequest.getStartDate().isAfter(searchRequest.getEndDate())) {
+            throw new IllegalArgumentException("Start date must not be after end date");
+        }
         // Build specification for dynamic filtering
         Specification<OrderEntity> spec = OrderSpecification.buildSearchSpecification(searchRequest);
         

@@ -27,13 +27,11 @@ public class EventMetricsConsumer {
         topics = {
             "order-created", 
             "order-validated", 
-            "payment-processed",
+            "order-validation-failed",
+            "payment-completed-events",
             "inventory-reserved",
-            "order-fulfilled",
-            "validation-failed",
-            "payment-failed",
-            "inventory-failed",
-            "fulfillment-failed"
+            "inventory-rejected",
+            "order-completed"
         },
         groupId = "monitoring-metrics-group"
     )
@@ -45,7 +43,8 @@ public class EventMetricsConsumer {
             
             String eventType = extractEventType(jsonNode);
             String serviceName = extractServiceName(eventType);
-            String status = eventType.contains("failed") ? "FAILED" : "SUCCESS";
+            String status = (eventType.toLowerCase().contains("failed")
+                    || eventType.toLowerCase().contains("rejected")) ? "FAILED" : "SUCCESS";
             String orderId = extractOrderId(jsonNode);
             Long processingTimeMs = extractProcessingTime(jsonNode);
             String errorMessage = extractErrorMessage(jsonNode);
@@ -86,16 +85,18 @@ public class EventMetricsConsumer {
      * Determine service name from event type
      */
     private String extractServiceName(String eventType) {
-        if (eventType.contains("order")) {
-            return "order-service";
-        } else if (eventType.contains("validation") || eventType.contains("validated")) {
+        String normalizedType = eventType.toLowerCase();
+        if (normalizedType.contains("validation") || normalizedType.contains("validated")) {
             return "validation-service";
-        } else if (eventType.contains("payment")) {
+        } else if (normalizedType.contains("payment")) {
             return "payment-service";
-        } else if (eventType.contains("inventory")) {
+        } else if (normalizedType.contains("inventory")) {
             return "inventory-service";
-        } else if (eventType.contains("fulfillment") || eventType.contains("fulfilled")) {
+        } else if (normalizedType.contains("fulfillment") || normalizedType.contains("fulfilled")
+                || normalizedType.contains("completed")) {
             return "fulfillment-service";
+        } else if (normalizedType.contains("order")) {
+            return "order-service";
         }
         return "unknown-service";
     }

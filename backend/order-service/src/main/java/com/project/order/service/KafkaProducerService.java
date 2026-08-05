@@ -35,8 +35,8 @@ public class KafkaProducerService {
             
             // Set order data
             event.setOrderId(order.getId());
-            event.setCustomerId(order.getCustomerId());
-            event.setOrderStatus(order.getStatus());
+            event.setCustomerId(order.getCustomerId().toString());
+            event.setOrderStatus(order.getOrderStatus());
             event.setTotalAmount(order.getTotalAmount());
             event.setCreatedAt(order.getCreatedAt());
 

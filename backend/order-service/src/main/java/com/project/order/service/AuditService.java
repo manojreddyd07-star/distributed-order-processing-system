@@ -82,15 +82,15 @@ public class AuditService {
     /**
      * Capture Validation events
      */
-    @KafkaListener(topics = {"validation-success", "validation-failed"}, 
+    @KafkaListener(topics = {"order-validated", "order-validation-failed"},
                    groupId = "audit-service-group", containerFactory = "kafkaListenerContainerFactory")
     @Transactional
     public void captureValidationEvent(Map<String, Object> event) {
         try {
             String eventId = (String) event.get("eventId");
             Long orderId = ((Number) event.get("orderId")).longValue();
-            String topic = (String) event.get("topic");
-            String status = topic != null && topic.contains("success") ? "SUCCESS" : "FAILED";
+            String validationStatus = (String) event.get("validationStatus");
+            String status = "VALID".equalsIgnoreCase(validationStatus) ? "SUCCESS" : "FAILED";
             String eventType = "VALIDATION_" + status;
             String message = (String) event.getOrDefault("message", 
                 status.equals("SUCCESS") ? "Validation passed" : "Validation failed");
@@ -105,15 +105,14 @@ public class AuditService {
     /**
      * Capture Payment events
      */
-    @KafkaListener(topics = {"payment-success", "payment-failed"}, 
+    @KafkaListener(topics = "payment-completed-events",
                    groupId = "audit-service-group", containerFactory = "kafkaListenerContainerFactory")
     @Transactional
     public void capturePaymentEvent(Map<String, Object> event) {
         try {
             String eventId = (String) event.get("eventId");
             Long orderId = ((Number) event.get("orderId")).longValue();
-            String topic = (String) event.get("topic");
-            String status = topic != null && topic.contains("success") ? "SUCCESS" : "FAILED";
+            String status = "SUCCESS";
             String eventType = "PAYMENT_" + status;
             String message = (String) event.getOrDefault("message", 
                 status.equals("SUCCESS") ? "Payment processed successfully" : "Payment processing failed");
@@ -128,15 +127,14 @@ public class AuditService {
     /**
      * Capture Inventory events
      */
-    @KafkaListener(topics = {"inventory-reserved", "inventory-failed"}, 
+    @KafkaListener(topics = {"inventory-reserved", "inventory-rejected"},
                    groupId = "audit-service-group", containerFactory = "kafkaListenerContainerFactory")
     @Transactional
     public void captureInventoryEvent(Map<String, Object> event) {
         try {
             String eventId = (String) event.get("eventId");
             Long orderId = ((Number) event.get("orderId")).longValue();
-            String topic = (String) event.get("topic");
-            String status = topic != null && topic.contains("reserved") ? "SUCCESS" : "FAILED";
+            String status = event.containsKey("reason") ? "FAILED" : "SUCCESS";
             String eventType = "INVENTORY_" + status;
             String message = (String) event.getOrDefault("message", 
                 status.equals("SUCCESS") ? "Inventory reserved" : "Inventory reservation failed");
@@ -151,15 +149,14 @@ public class AuditService {
     /**
      * Capture Fulfillment events
      */
-    @KafkaListener(topics = {"fulfillment-completed", "fulfillment-failed"}, 
+    @KafkaListener(topics = "order-completed",
                    groupId = "audit-service-group", containerFactory = "kafkaListenerContainerFactory")
     @Transactional
     public void captureFulfillmentEvent(Map<String, Object> event) {
         try {
             String eventId = (String) event.get("eventId");
             Long orderId = ((Number) event.get("orderId")).longValue();
-            String topic = (String) event.get("topic");
-            String status = topic != null && topic.contains("completed") ? "SUCCESS" : "FAILED";
+            String status = "SUCCESS";
             String eventType = "FULFILLMENT_" + status;
             String message = (String) event.getOrDefault("message", 
                 status.equals("SUCCESS") ? "Fulfillment completed" : "Fulfillment failed");

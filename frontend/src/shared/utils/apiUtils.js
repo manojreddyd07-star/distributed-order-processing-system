@@ -173,10 +173,4 @@ export const cachedApiCall = async (cacheKey, apiCall, useCache = true) => {
   pendingRequests.set(cacheKey, requestPromise);
   
   return requestPromise;
-  
-  if (useCache) {
-    apiCache.set(cacheKey, response);
-  }
-  
-  return response;
 };

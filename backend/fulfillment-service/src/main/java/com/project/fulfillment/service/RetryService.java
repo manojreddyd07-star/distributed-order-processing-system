@@ -50,8 +50,10 @@ public class RetryService {
         logger.info("Processing retry event: {}", retryEvent.getRetryId());
         
         try {
-            Class<?> eventClass = Class.forName(retryEvent.getEventClass());
-            Object originalEvent = objectMapper.readValue(retryEvent.getEventPayload(), eventClass);
+            if (!InventoryReservedEvent.class.getName().equals(retryEvent.getEventClass())) {
+                throw new IllegalArgumentException("Unsupported event type: " + retryEvent.getEventClass());
+            }
+            Object originalEvent = objectMapper.readValue(retryEvent.getEventPayload(), InventoryReservedEvent.class);
             
             if (originalEvent instanceof InventoryReservedEvent) {
                 InventoryReservedEvent inventoryEvent = (InventoryReservedEvent) originalEvent;

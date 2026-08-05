@@ -54,8 +54,10 @@ public class RetryService {
         
         try {
             // Deserialize the original event payload
-            Class<?> eventClass = Class.forName(retryEvent.getEventClass());
-            Object originalEvent = objectMapper.readValue(retryEvent.getEventPayload(), eventClass);
+            if (!OrderValidatedEvent.class.getName().equals(retryEvent.getEventClass())) {
+                throw new IllegalArgumentException("Unsupported event type: " + retryEvent.getEventClass());
+            }
+            Object originalEvent = objectMapper.readValue(retryEvent.getEventPayload(), OrderValidatedEvent.class);
             
             // Attempt to process the event based on type
             if (originalEvent instanceof OrderValidatedEvent) {

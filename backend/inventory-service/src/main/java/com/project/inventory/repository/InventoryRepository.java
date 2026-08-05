@@ -4,9 +4,11 @@ import com.project.inventory.entity.InventoryEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.QueryHints;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.stereotype.Repository;
 
 import jakarta.persistence.QueryHint;
+import jakarta.persistence.LockModeType;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,6 +23,10 @@ public interface InventoryRepository extends JpaRepository<InventoryEntity, Long
     @QueryHints(@QueryHint(name = "org.hibernate.cacheable", value = "false"))
     @Query("SELECT i FROM InventoryEntity i WHERE i.productId = :productId")
     Optional<InventoryEntity> findByProductId(String productId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT i FROM InventoryEntity i WHERE i.productId = :productId")
+    Optional<InventoryEntity> findByProductIdForUpdate(String productId);
     
     /**
      * Find all inventory items by status with optimized query

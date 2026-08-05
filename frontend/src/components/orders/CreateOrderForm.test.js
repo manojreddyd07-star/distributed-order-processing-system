@@ -2,12 +2,16 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import CreateOrderForm from './CreateOrderForm';
+import { createOrder } from '../../services/orderApi';
+
+jest.mock('../../services/orderApi', () => ({ createOrder: jest.fn() }));
 
 describe('CreateOrderForm Component', () => {
   
   beforeEach(() => {
     // Clear all mocks before each test
     jest.clearAllMocks();
+    createOrder.mockResolvedValue({ id: 1 });
   });
 
   test('renders create order form with all fields', () => {

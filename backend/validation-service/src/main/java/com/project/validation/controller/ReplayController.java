@@ -11,7 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/replay")
+@RequestMapping("/replay")
 @CrossOrigin(origins = "*")
 public class ReplayController {
     
@@ -31,6 +31,9 @@ public class ReplayController {
     @PostMapping
     public ResponseEntity<ReplayResponse> replayEvent(@RequestBody ReplayRequest request) {
         logger.info("POST /api/replay - Replaying event: {}", request);
+        if (request == null || !"order-created".equals(request.getReplayTopic())) {
+            return ResponseEntity.badRequest().body(ReplayResponse.error("Invalid replay topic for validation-service"));
+        }
         
         try {
             ReplayResponse response = eventReplayService.replayEvent(request);

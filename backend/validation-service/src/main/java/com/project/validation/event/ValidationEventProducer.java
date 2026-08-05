@@ -10,6 +10,7 @@ import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.math.BigDecimal;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -27,6 +28,11 @@ public class ValidationEventProducer {
     public ValidationEventProducer(KafkaTemplate<String, Object> kafkaTemplate) {
         this.kafkaTemplate = kafkaTemplate;
     }
+
+    public void publishValidationSuccessEvent(Long orderId, String validationStatus,
+                                              String validationMessage) {
+        publishValidationSuccessEvent(orderId, validationStatus, validationMessage, null);
+    }
     
     /**
      * Publishes a validation success event to the validation-success topic
@@ -34,7 +40,8 @@ public class ValidationEventProducer {
      * @param validationStatus The validation status (e.g., "VALID")
      * @param validationMessage The validation message
      */
-    public void publishValidationSuccessEvent(Long orderId, String validationStatus, String validationMessage) {
+    public void publishValidationSuccessEvent(Long orderId, String validationStatus, String validationMessage,
+                                              BigDecimal amount) {
         try {
             // Create event with metadata
             OrderValidatedEvent event = new OrderValidatedEvent(
@@ -43,7 +50,8 @@ public class ValidationEventProducer {
                 LocalDateTime.now(),
                 orderId,
                 validationStatus,
-                validationMessage
+                validationMessage,
+                amount
             );
             
             logger.info("Publishing validation success event for order ID: {}", orderId);

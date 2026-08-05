@@ -113,7 +113,7 @@ const OrdersPage = () => {
         />
       </>
     );
-  }, [isLoading, error, orders, currentPage, totalPages, totalElements, pageSize, handlePageChange, handlePageSizeChange, fetchOrders]);
+  }, [isLoading, error, orders, currentPage, totalPages, totalElements, pageSize, handlePageChange, handlePageSizeChange]);
 
   return (
     <div className="orders-page">

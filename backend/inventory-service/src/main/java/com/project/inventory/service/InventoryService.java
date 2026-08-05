@@ -77,7 +77,7 @@ public class InventoryService {
                    productId, productName, quantity, orderId);
         
         // Find existing inventory or create new one
-        InventoryEntity inventory = inventoryRepository.findByProductId(productId)
+        InventoryEntity inventory = inventoryRepository.findByProductIdForUpdate(productId)
                 .orElseGet(() -> {
                     logger.info("Creating new inventory record for product: {}", productId);
                     InventoryEntity newInventory = new InventoryEntity(

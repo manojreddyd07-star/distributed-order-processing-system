@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createOrder } from '../../services/orderApi';
 import './CreateOrderForm.css';
 
 const CreateOrderForm = () => {
@@ -31,7 +32,7 @@ const CreateOrderForm = () => {
       newErrors.totalAmount = 'Total Amount is required';
     } 
     // Amount greater than zero validation
-    else if (parseFloat(totalAmount) <= 0) {
+    else if (!Number.isFinite(Number(totalAmount)) || Number(totalAmount) <= 0) {
       newErrors.totalAmount = 'Total Amount must be greater than zero';
     }
     
@@ -55,9 +56,10 @@ const CreateOrderForm = () => {
     setIsLoading(true);
     
     try {
-      // TODO: API call will be implemented later
-      // Simulating API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await createOrder({
+        customerId: customerId.trim(),
+        totalAmount: Number(totalAmount),
+      });
       
       // Show success notification
       setSuccessMessage('Order created successfully!');
