@@ -135,29 +135,31 @@ flowchart LR
 
 ```text
 distributed-order-processing-system/
-├── backend/
-│   ├── common-lib/              # Shared events, DTOs, Kafka configuration, and utilities
-│   ├── order-service/           # Order API, event producer, and lifecycle audit
-│   ├── validation-service/      # Order validation, retry, DLQ, replay, and idempotency
-│   ├── payment-service/         # Payment records and operational recovery APIs
-│   ├── inventory-service/       # Stock management and inventory events
-│   ├── fulfillment-service/     # Fulfillment records, history, and completion events
-│   └── monitoring-service/      # Health aggregation and event performance metrics
-├── frontend/
-│   ├── public/
-│   ├── src/
-│   │   ├── components/          # Domain and shared UI components
-│   │   ├── pages/               # Dashboard and operational pages
-│   │   ├── services/            # Service-specific API clients
-│   │   └── shared/              # Shared hooks, API helpers, utilities, and components
-│   ├── Dockerfile
-│   └── nginx.conf
-├── infrastructure/              # Supporting infrastructure resources
-├── docker-compose.yml           # Complete local stack
-├── .env.example                 # Environment configuration template
-├── simple-validation.ps1        # Lightweight validation helper
-├── validate-deployment.ps1      # Deployment validation helper
-└── validation-report.ps1        # Validation reporting helper
+|-- backend/
+|   |-- common-lib/              # Shared events, DTOs, Kafka configuration, and utilities
+|   |-- order-service/           # Order API, event producer, and lifecycle audit
+|   |-- validation-service/      # Order validation, retry, DLQ, replay, and idempotency
+|   |-- payment-service/         # Payment records and operational recovery APIs
+|   |-- inventory-service/       # Stock management and inventory events
+|   |-- fulfillment-service/     # Fulfillment records, history, and completion events
+|   `-- monitoring-service/      # Health aggregation and event performance metrics
+|-- frontend/
+|   |-- public/
+|   |-- src/
+|   |   |-- components/          # Domain and shared UI components
+|   |   |-- pages/               # Dashboard and operational pages
+|   |   |-- services/            # Service-specific API clients
+|   |   `-- shared/              # Shared hooks, API helpers, utilities, and components
+|   |-- Dockerfile
+|   `-- nginx.conf
+|-- infrastructure/
+|   |-- kafka/                   # Reserved infrastructure directory
+|   `-- postgres/                # Reserved infrastructure directory
+|-- docker-compose.yml           # Complete local stack
+|-- .env.example                 # Deployment-oriented configuration reference
+|-- simple-validation.ps1        # Lightweight validation helper
+|-- validate-deployment.ps1      # Deployment validation helper
+`-- validation-report.ps1        # Validation reporting helper
 ```
 
 ## Microservices overview
@@ -183,7 +185,7 @@ The validation, payment, inventory, and fulfillment services also expose retry, 
 | `order-created` | Order Service | Validation Service, Audit, Monitoring | Starts asynchronous order validation. |
 | `order-validated` | Validation Service | Payment Service, Audit, Monitoring | Signals successful validation. |
 | `order-validation-failed` | Validation Service | Audit, Monitoring | Records an invalid order outcome. |
-| `payment-completed-events` | Payment workflow or replay | Inventory Service, Audit, Monitoring | Starts inventory verification and reservation. |
+| `payment-completed-events` | Replay API or an external/manual producer | Inventory Service, Audit, Monitoring | Starts inventory verification and reservation; the current payment service does not publish this topic. |
 | `inventory-reserved` | Inventory Service | Fulfillment Service, Audit, Monitoring | Starts fulfillment for reserved stock. |
 | `inventory-rejected` | Inventory Service | Audit, Monitoring | Reports inventory rejection or insufficient stock. |
 | `order-completed` | Fulfillment Service | Audit, Monitoring | Signals completion of fulfillment. |
@@ -243,6 +245,7 @@ Search parameters include `customerId`, `orderStatus`, `startDate`, `endDate`, `
 | `GET` | `/api/payments/order/{orderId}` | List payments for an order. |
 | `GET` | `/api/retry` | List payment retry records. |
 | `GET` | `/api/dlq` | List failed payment events. |
+| `GET` | `/api/dlq/service/{serviceName}` | Filter failed payment events by service. |
 | `GET` | `/api/idempotency` | List payment idempotency records. |
 | `POST` | `/api/replay` | Replay an `ORDER_VALIDATED` failure to `order-validated`. |
 
@@ -257,6 +260,7 @@ Search parameters include `customerId`, `orderStatus`, `startDate`, `endDate`, `
 | `GET` | `/api/inventory/verify` | Verify availability using query parameters. |
 | `GET` | `/api/retry` | List inventory retry records. |
 | `GET` | `/api/dlq` | List failed inventory events. |
+| `GET` | `/api/dlq/service/{serviceName}` | Filter failed inventory events by service. |
 | `GET` | `/api/idempotency` | List inventory idempotency records. |
 | `POST` | `/api/replay` | Replay a `PAYMENT_COMPLETED` failure to `payment-completed-events`. |
 
@@ -273,6 +277,7 @@ Search parameters include `customerId`, `orderStatus`, `startDate`, `endDate`, `
 | `GET` | `/api/fulfillments/history` | List all fulfillment history entries. |
 | `GET` | `/api/retry` | List fulfillment retry records. |
 | `GET` | `/api/dlq` | List failed fulfillment events. |
+| `GET` | `/api/dlq/service/{serviceName}` | Filter failed fulfillment events by service. |
 | `GET` | `/api/idempotency` | List fulfillment idempotency records. |
 | `POST` | `/api/replay` | Replay an `INVENTORY_RESERVED` failure to `inventory-reserved`. |
 
@@ -288,12 +293,11 @@ Search parameters include `customerId`, `orderStatus`, `startDate`, `endDate`, `
 
 ### Replay request
 
-Replay endpoints accept the following shape. Each service restricts replay to its supported topic and event type.
+Replay endpoints accept the following shape. The service loads the event type and payload from the stored failed event, then restricts replay to its supported topic and event type.
 
 ```json
 {
   "eventId": "failed-event-id",
-  "eventType": "ORDER_CREATED",
   "replayTopic": "order-created"
 }
 ```
@@ -372,7 +376,7 @@ sequenceDiagram
    cd distributed-order-processing-system
    ```
 
-2. Create a local environment file:
+2. Optionally create a local environment file:
 
    ```bash
    cp .env.example .env
@@ -384,7 +388,9 @@ sequenceDiagram
    Copy-Item .env.example .env
    ```
 
-3. Review database credentials, service URLs, ports, and Kafka settings in `.env` and `docker-compose.yml`.
+   The current Compose file hard-codes its service credentials, ports, URLs, and Kafka settings. Of the values in `.env.example`, Compose currently consumes only `COMPOSE_PROJECT_NAME`; copying the file does not override the other Compose values.
+
+3. Review the effective development settings in `docker-compose.yml`. Use the variables documented under [Environment variables](#environment-variables) when starting Spring Boot services directly.
 
 ### Build backend services locally
 
@@ -461,6 +467,8 @@ Inspect container health and status:
 docker compose ps
 ```
 
+The order and validation applications use the `/api` servlet context, so their actual Actuator health URLs are `/api/actuator/health`. Their current Compose health checks request `/actuator/health`; those two containers can therefore be reported as unhealthy even when their APIs are running. This does not prevent the remaining application containers from being created because they depend on those services with `service_started`, not `service_healthy`.
+
 Once the containers are ready, open:
 
 - Frontend: <http://localhost:3000>
@@ -485,7 +493,7 @@ docker compose down -v
 
 ## Environment variables
 
-The Compose file provides development defaults. `.env.example` documents additional deployment-oriented settings.
+Spring Boot reads the variables below when services are launched directly, and Compose explicitly supplies a subset of them to each container. The checked-in `.env.example` is mostly a deployment-oriented reference: the current `docker-compose.yml` does not interpolate its database, port, Kafka, service URL, JVM, profile, logging, or frontend entries. Only the standard Compose variable `COMPOSE_PROJECT_NAME` affects the current Compose project.
 
 ### Core service variables
 
@@ -496,13 +504,13 @@ The Compose file provides development defaults. `.env.example` documents additio
 | `DB_PASSWORD` | `postgres` | PostgreSQL password; replace outside local development. |
 | `KAFKA_BOOTSTRAP_SERVERS` | `kafka:29092` | Kafka brokers used by containers. |
 | `SERVER_PORT` | `8082` | Optional Spring Boot port override. |
-| `SPRING_PROFILES_ACTIVE` | `prod` | Optional active Spring profile. |
+| `SPRING_PROFILES_ACTIVE` | `prod` | Standard Spring profile override, but no profile-specific configuration is currently checked in. |
 
 ### Monitoring variables
 
 | Variable | Docker value | Description |
 |---|---|---|
-| `ORDER_SERVICE_URL` | `http://order-service:8080/api` | Order service base URL used for health aggregation. |
+| `ORDER_SERVICE_URL` | `http://order-service:8080/api` | Order service base URL used for health aggregation; the `/api` context is required. |
 | `VALIDATION_SERVICE_URL` | `http://validation-service:8081/api` | Validation service base URL. |
 | `PAYMENT_SERVICE_URL` | `http://payment-service:8082` | Payment service base URL. |
 | `INVENTORY_SERVICE_URL` | `http://inventory-service:8083` | Inventory service base URL. |
@@ -512,14 +520,16 @@ The Compose file provides development defaults. `.env.example` documents additio
 
 | Variable | Default | Description |
 |---|---|---|
-| `REACT_APP_API_URL` | `http://localhost:8080/api` | Order API base URL. |
+| `REACT_APP_API_URL` | `http://localhost:8080/api` | Order API base URL. Some inventory clients also reference this variable, so setting it globally can redirect those clients as well. |
 | `REACT_APP_VALIDATION_API_URL` | `http://localhost:8081/api` | Validation API base URL. |
 | `REACT_APP_PAYMENT_API_URL` | `http://localhost:8082/api` | Payment API base URL. |
 | `REACT_APP_INVENTORY_API_URL` | `http://localhost:8083/api` | Inventory API base URL. |
 | `REACT_APP_FULFILLMENT_API_URL` | `http://localhost:8084/api` | Fulfillment API base URL. |
 | `REACT_APP_MONITORING_API_URL` | `http://localhost:8086/api/monitoring` | Monitoring API base URL. |
 
-React environment variables are embedded at build time. Rebuild the frontend image after changing them.
+These values describe the primary API bases, but the current clients do not use the variables consistently: fulfillment record clients fall back to `http://localhost:8084/api/fulfillments`, while fulfillment operational clients append paths to the service-level `/api` base. Domain inventory clients use `REACT_APP_API_URL` rather than `REACT_APP_INVENTORY_API_URL`. Avoid overriding these shared variables without checking every client that consumes them.
+
+React environment variables are embedded at build time. The current frontend Dockerfile declares no build arguments, and the `environment` entry on the runtime Nginx container is too late to alter the compiled bundle. Consequently, the Compose frontend image uses the source-code fallback URLs. To customize them without application changes, set the variables before a local `npm run build`; changing only the running container environment has no effect.
 
 ## Testing
 
@@ -539,7 +549,7 @@ cd ../validation-service
 mvn test
 ```
 
-The backend includes unit tests and Kafka integration tests. Some integration tests require PostgreSQL and Kafka infrastructure; confirm the expected test profile and dependencies before running them outside Docker.
+The backend includes Mockito unit tests and Spring Boot integration tests. Kafka integration tests use an embedded Kafka broker, so an external Kafka broker is not required for those tests. They still load each service's configured PostgreSQL datasource, and the project does not include Testcontainers or an in-memory database dependency; provide the appropriate PostgreSQL database (or explicit test datasource overrides) before running integration tests.
 
 ### Frontend
 
@@ -578,6 +588,8 @@ The monitoring service combines three sources of operational information:
 - **Remote health probes:** status of each business service.
 - **Kafka event metrics:** persisted event status, processing time, and order identifiers.
 
+The Kafka metrics consumer listens to the seven business topics listed above. It classifies failed/rejected event types as failures and all other recognized events as successes. When an event does not include processing duration, the current implementation records a generated demonstration value between 50 and 499 ms; latency figures are therefore illustrative rather than end-to-end measured latency.
+
 Useful endpoints:
 
 ```text
@@ -588,7 +600,7 @@ GET http://localhost:8086/actuator/health
 GET http://localhost:8086/actuator/prometheus
 ```
 
-The React monitoring page displays service health, throughput, latency, and failure information. Prometheus can scrape `/actuator/prometheus`; a Grafana deployment is not included in the current Compose stack.
+The React monitoring page displays service health, throughput, latency, and failure information. The `/api/monitoring/metrics` response includes local JVM and system measurements; its HTTP success/failure and average-response-time fields are currently placeholders. Prometheus can scrape `/actuator/prometheus`; a Prometheus server and Grafana deployment are not included in the current Compose stack.
 
 ## Future enhancements
 
