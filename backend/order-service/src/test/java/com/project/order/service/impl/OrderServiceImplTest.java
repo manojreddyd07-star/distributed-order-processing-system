@@ -51,13 +51,13 @@ class OrderServiceImplTest {
     void setUp() {
         // Setup valid create request
         validCreateRequest = new CreateOrderRequest();
-        validCreateRequest.setCustomerId("CUST-001");
+        validCreateRequest.setCustomerId(1001L);
         validCreateRequest.setTotalAmount(new BigDecimal("99.99"));
 
         // Setup saved order entity
         savedOrderEntity = new OrderEntity();
         savedOrderEntity.setId(1L);
-        savedOrderEntity.setCustomerId("CUST-001");
+        savedOrderEntity.setCustomerId(1001L);
         savedOrderEntity.setTotalAmount(new BigDecimal("99.99"));
         savedOrderEntity.setOrderStatus("PENDING");
         savedOrderEntity.setCreatedAt(LocalDateTime.now());
@@ -75,7 +75,7 @@ class OrderServiceImplTest {
         // Assert
         assertThat(response).isNotNull();
         assertThat(response.getId()).isEqualTo(1L);
-        assertThat(response.getCustomerId()).isEqualTo("CUST-001");
+        assertThat(response.getCustomerId()).isEqualTo(1001L);
         assertThat(response.getTotalAmount()).isEqualTo(new BigDecimal("99.99"));
         assertThat(response.getOrderStatus()).isEqualTo("PENDING");
         assertThat(response.getCreatedAt()).isNotNull();
@@ -85,7 +85,7 @@ class OrderServiceImplTest {
         verify(orderRepository, times(1)).save(orderCaptor.capture());
         
         OrderEntity capturedOrder = orderCaptor.getValue();
-        assertThat(capturedOrder.getCustomerId()).isEqualTo("CUST-001");
+        assertThat(capturedOrder.getCustomerId()).isEqualTo(1001L);
         assertThat(capturedOrder.getTotalAmount()).isEqualTo(new BigDecimal("99.99"));
         assertThat(capturedOrder.getOrderStatus()).isEqualTo("PENDING");
         assertThat(capturedOrder.getCreatedAt()).isNotNull();
@@ -135,7 +135,7 @@ class OrderServiceImplTest {
         // Assert
         assertThat(response).isNotNull();
         assertThat(response.getId()).isEqualTo(1L);
-        assertThat(response.getCustomerId()).isEqualTo("CUST-001");
+        assertThat(response.getCustomerId()).isEqualTo(1001L);
         assertThat(response.getTotalAmount()).isEqualTo(new BigDecimal("99.99"));
         assertThat(response.getOrderStatus()).isEqualTo("PENDING");
 
@@ -161,7 +161,7 @@ class OrderServiceImplTest {
         // Arrange
         OrderEntity order2 = new OrderEntity();
         order2.setId(2L);
-        order2.setCustomerId("CUST-002");
+        order2.setCustomerId(1002L);
         order2.setTotalAmount(new BigDecimal("150.00"));
         order2.setOrderStatus("COMPLETED");
         order2.setCreatedAt(LocalDateTime.now());
@@ -177,8 +177,8 @@ class OrderServiceImplTest {
         assertThat(responses).hasSize(2);
         assertThat(responses.get(0).getId()).isEqualTo(1L);
         assertThat(responses.get(1).getId()).isEqualTo(2L);
-        assertThat(responses.get(0).getCustomerId()).isEqualTo("CUST-001");
-        assertThat(responses.get(1).getCustomerId()).isEqualTo("CUST-002");
+        assertThat(responses.get(0).getCustomerId()).isEqualTo(1001L);
+        assertThat(responses.get(1).getCustomerId()).isEqualTo(1002L);
 
         verify(orderRepository, times(1)).findAll();
     }
@@ -236,7 +236,7 @@ class OrderServiceImplTest {
         searchRequest.setSize(10);
         searchRequest.setSortBy("id");
         searchRequest.setSortDirection("ASC");
-        searchRequest.setCustomerId("CUST-001");
+        searchRequest.setCustomerId(1001L);
         searchRequest.setOrderStatus("PENDING");
 
         List<OrderEntity> filteredOrders = Arrays.asList(savedOrderEntity);
@@ -252,7 +252,7 @@ class OrderServiceImplTest {
         // Assert
         assertThat(response).isNotNull();
         assertThat(response.getContent()).hasSize(1);
-        assertThat(response.getContent().get(0).getCustomerId()).isEqualTo("CUST-001");
+        assertThat(response.getContent().get(0).getCustomerId()).isEqualTo(1001L);
         assertThat(response.getContent().get(0).getOrderStatus()).isEqualTo("PENDING");
 
         verify(orderRepository, times(1)).findAll(any(Specification.class), any(Pageable.class));

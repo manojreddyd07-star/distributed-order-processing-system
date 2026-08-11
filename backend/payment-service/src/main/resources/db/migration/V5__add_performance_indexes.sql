@@ -11,7 +11,7 @@ CREATE INDEX IF NOT EXISTS idx_payments_order_created ON payments(order_id, crea
 CREATE INDEX IF NOT EXISTS idx_payments_status_amount ON payments(status, amount DESC, created_at DESC);
 
 -- Index for failed payment analysis
-CREATE INDEX IF NOT EXISTS idx_payments_failed ON payments(status, failure_reason, created_at DESC) 
+CREATE INDEX IF NOT EXISTS idx_payments_failed ON payments(status, created_at DESC)
 WHERE status = 'FAILED';
 
 -- Index for idempotency checks (critical path)

@@ -1,10 +1,10 @@
 -- Add composite indexes for common query patterns in Fulfillment Service
 
 -- Composite index for order fulfillments by status
-CREATE INDEX IF NOT EXISTS idx_fulfillments_order_status ON fulfillments(order_id, fulfillment_status);
+CREATE INDEX IF NOT EXISTS idx_fulfillments_order_status ON fulfillment(order_id, fulfillment_status);
 
 -- Composite index for fulfillment reporting
-CREATE INDEX IF NOT EXISTS idx_fulfillments_status_created ON fulfillments(fulfillment_status, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_fulfillments_status_created ON fulfillment(fulfillment_status, created_at DESC);
 
 -- Composite index for audit log queries
 CREATE INDEX IF NOT EXISTS idx_fulfillment_audit_order_created ON fulfillment_audit_log(fulfillment_id, created_at DESC);

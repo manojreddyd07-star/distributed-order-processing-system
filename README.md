@@ -467,7 +467,7 @@ Inspect container health and status:
 docker compose ps
 ```
 
-The order and validation applications use the `/api` servlet context, so their actual Actuator health URLs are `/api/actuator/health`. Their current Compose health checks request `/actuator/health`; those two containers can therefore be reported as unhealthy even when their APIs are running. This does not prevent the remaining application containers from being created because they depend on those services with `service_started`, not `service_healthy`.
+The order and validation applications use the `/api` servlet context, so their Compose health checks use `/api/actuator/health`. The other services use `/actuator/health`.
 
 Once the containers are ready, open:
 
@@ -493,7 +493,7 @@ docker compose down -v
 
 ## Environment variables
 
-Spring Boot reads the variables below when services are launched directly, and Compose explicitly supplies a subset of them to each container. The checked-in `.env.example` is mostly a deployment-oriented reference: the current `docker-compose.yml` does not interpolate its database, port, Kafka, service URL, JVM, profile, logging, or frontend entries. Only the standard Compose variable `COMPOSE_PROJECT_NAME` affects the current Compose project.
+Spring Boot reads the variables below when services are launched directly, and Compose explicitly supplies the variables required by each container. The checked-in `.env.example` is a deployment reference. Compose also interpolates the frontend build URLs and `CORS_ALLOWED_ORIGINS`; database names, container ports, and internal Kafka addresses remain fixed development defaults in `docker-compose.yml`.
 
 ### Core service variables
 
@@ -529,7 +529,7 @@ Spring Boot reads the variables below when services are launched directly, and C
 
 These values describe the primary API bases, but the current clients do not use the variables consistently: fulfillment record clients fall back to `http://localhost:8084/api/fulfillments`, while fulfillment operational clients append paths to the service-level `/api` base. Domain inventory clients use `REACT_APP_API_URL` rather than `REACT_APP_INVENTORY_API_URL`. Avoid overriding these shared variables without checking every client that consumes them.
 
-React environment variables are embedded at build time. The current frontend Dockerfile declares no build arguments, and the `environment` entry on the runtime Nginx container is too late to alter the compiled bundle. Consequently, the Compose frontend image uses the source-code fallback URLs. To customize them without application changes, set the variables before a local `npm run build`; changing only the running container environment has no effect.
+React environment variables are embedded at build time. The frontend Dockerfile and Compose configuration pass these variables as build arguments, so set them in the shell or a Compose `.env` file before running `docker compose build frontend`. Changing only the environment of an already-built Nginx container does not alter the compiled bundle.
 
 ## Testing
 

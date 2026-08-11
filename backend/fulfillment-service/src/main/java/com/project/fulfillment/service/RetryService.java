@@ -149,6 +149,7 @@ public class RetryService {
         } catch (Exception e) {
             logger.error("Failed to create retry event for event: {}. Error: {}", 
                         eventId, e.getMessage(), e);
+            throw new IllegalStateException("Unable to persist or publish retry event", e);
         }
     }
     

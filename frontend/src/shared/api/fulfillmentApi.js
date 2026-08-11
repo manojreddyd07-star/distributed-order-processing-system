@@ -1,5 +1,6 @@
 // Fulfillment API Service
-const API_BASE_URL = process.env.REACT_APP_FULFILLMENT_API_URL || 'http://localhost:8084/api/fulfillments';
+const SERVICE_API_URL = process.env.REACT_APP_FULFILLMENT_API_URL || 'http://localhost:8084/api';
+const API_BASE_URL = `${SERVICE_API_URL.replace(/\/$/, '')}/fulfillments`;
 
 /**
  * Get all fulfillments

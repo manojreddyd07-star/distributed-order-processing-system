@@ -17,7 +17,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/audit")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "${CORS_ALLOWED_ORIGINS:http://localhost:3000}")
 public class AuditController {
     
     private static final Logger logger = LoggerFactory.getLogger(AuditController.class);
@@ -37,6 +37,7 @@ public class AuditController {
             @RequestParam(defaultValue = "20") int size) {
         
         try {
+            validatePageRequest(page, size);
             logger.info("Fetching audit events - Page: {}, Size: {}", page, size);
             
             Pageable pageable = PageRequest.of(page, size);
@@ -51,6 +52,8 @@ public class AuditController {
             response.put("hasPrevious", auditPage.hasPrevious());
             
             return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             logger.error("Error fetching audit events: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -84,6 +87,7 @@ public class AuditController {
             @RequestParam(defaultValue = "20") int size) {
         
         try {
+            validatePageRequest(page, size);
             logger.info("Fetching filtered audit events - Type: {}, Service: {}, Status: {}, Page: {}, Size: {}", 
                        eventType, serviceName, status, page, size);
             
@@ -101,6 +105,8 @@ public class AuditController {
             response.put("hasPrevious", auditPage.hasPrevious());
             
             return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             logger.error("Error fetching filtered audit events: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -116,5 +122,11 @@ public class AuditController {
         response.put("status", "UP");
         response.put("service", "audit");
         return ResponseEntity.ok(response);
+    }
+
+    private void validatePageRequest(int page, int size) {
+        if (page < 0 || size < 1 || size > 100) {
+            throw new IllegalArgumentException("Page must be non-negative and size must be between 1 and 100");
+        }
     }
 }

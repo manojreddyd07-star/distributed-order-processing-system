@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8083/api';
+const API_BASE_URL = process.env.REACT_APP_INVENTORY_API_URL || 'http://localhost:8083/api';
 
 /**
  * Get all inventory items

@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/retry")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "${CORS_ALLOWED_ORIGINS:http://localhost:3000}")
 public class RetryController {
     
     private static final Logger logger = LoggerFactory.getLogger(RetryController.class);

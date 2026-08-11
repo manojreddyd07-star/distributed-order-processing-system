@@ -10,7 +10,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/validations")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "${CORS_ALLOWED_ORIGINS:http://localhost:3000}")
 public class ValidationController {
 
     @Autowired

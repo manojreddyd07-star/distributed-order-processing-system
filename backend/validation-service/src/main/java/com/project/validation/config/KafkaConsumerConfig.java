@@ -9,6 +9,7 @@ import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
+import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 
 import java.util.HashMap;
@@ -46,7 +47,7 @@ public class KafkaConsumerConfig {
         configProps.put(ConsumerConfig.MAX_PARTITION_FETCH_BYTES_CONFIG, 1048576); // 1MB per partition
         
         configProps.put(JsonDeserializer.TRUSTED_PACKAGES, "com.project.common.events");
-        configProps.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
+        configProps.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, true);
         return new DefaultKafkaConsumerFactory<>(configProps);
     }
 
@@ -61,6 +62,7 @@ public class KafkaConsumerConfig {
         
         // Optimize poll timeout
         factory.getContainerProperties().setPollTimeout(1000);
+        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
         
         return factory;
     }

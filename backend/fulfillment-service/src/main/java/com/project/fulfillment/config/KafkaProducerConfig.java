@@ -1,6 +1,6 @@
 package com.project.fulfillment.config;
 
-import com.project.fulfillment.event.OrderCompletedEvent;
+import com.project.common.events.OrderCompletedEvent;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/replay")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "${CORS_ALLOWED_ORIGINS:http://localhost:3000}")
 public class ReplayController {
     
     private static final Logger logger = LoggerFactory.getLogger(ReplayController.class);

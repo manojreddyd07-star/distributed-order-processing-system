@@ -89,8 +89,8 @@ public class MetricsService {
             
             if (dbHealth != null) {
                 Map<String, Object> details = new HashMap<>();
-                if (dbHealth.getDetails() != null) {
-                    details.putAll(dbHealth.getDetails());
+                if (dbHealth instanceof Health health && health.getDetails() != null) {
+                    details.putAll(health.getDetails());
                 }
                 
                 return ServiceHealthDTO.builder()
@@ -123,8 +123,8 @@ public class MetricsService {
             
             if (kafkaHealth != null) {
                 Map<String, Object> details = new HashMap<>();
-                if (kafkaHealth.getDetails() != null) {
-                    details.putAll(kafkaHealth.getDetails());
+                if (kafkaHealth instanceof Health health && health.getDetails() != null) {
+                    details.putAll(health.getDetails());
                 }
                 
                 return ServiceHealthDTO.builder()

@@ -14,7 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/fulfillments")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "${CORS_ALLOWED_ORIGINS:http://localhost:3000}")
 public class FulfillmentController {
     
     private static final Logger logger = LoggerFactory.getLogger(FulfillmentController.class);

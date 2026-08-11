@@ -1,6 +1,9 @@
 package com.project.inventory.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 @Entity
@@ -12,18 +15,26 @@ public class InventoryEntity {
     private Long id;
     
     @Column(name = "product_id", nullable = false, unique = true)
+    @NotBlank(message = "Product ID is required")
     private String productId;
     
     @Column(name = "product_name", nullable = false)
+    @NotBlank(message = "Product name is required")
     private String productName;
     
     @Column(name = "available_quantity", nullable = false)
+    @NotNull(message = "Available quantity is required")
+    @Min(value = 0, message = "Available quantity cannot be negative")
     private Integer availableQuantity;
     
     @Column(name = "reserved_quantity", nullable = false)
+    @NotNull(message = "Reserved quantity is required")
+    @Min(value = 0, message = "Reserved quantity cannot be negative")
     private Integer reservedQuantity;
     
     @Column(name = "total_quantity", nullable = false)
+    @NotNull(message = "Total quantity is required")
+    @Min(value = 0, message = "Total quantity cannot be negative")
     private Integer totalQuantity;
     
     @Column(name = "status", nullable = false)

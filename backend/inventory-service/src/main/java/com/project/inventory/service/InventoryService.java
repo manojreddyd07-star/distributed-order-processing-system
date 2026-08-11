@@ -41,6 +41,13 @@ public class InventoryService {
      */
     public boolean verifyInventory(String productId, Integer requiredQuantity) {
         logger.info("Verifying inventory for product ID: {}, required quantity: {}", productId, requiredQuantity);
+
+        if (productId == null || productId.isBlank()) {
+            throw new IllegalArgumentException("Product ID is required");
+        }
+        if (requiredQuantity == null || requiredQuantity <= 0) {
+            throw new IllegalArgumentException("Required quantity must be positive");
+        }
         
         InventoryEntity inventory = inventoryRepository.findByProductId(productId)
                 .orElse(null);
@@ -76,6 +83,13 @@ public class InventoryService {
         logger.info("Reserving inventory - Product ID: {}, Product Name: {}, Quantity: {}, Order ID: {}", 
                    productId, productName, quantity, orderId);
         
+        if (productId == null || productId.isBlank() || productName == null || productName.isBlank()) {
+            throw new IllegalArgumentException("Product ID and product name are required");
+        }
+        if (quantity == null || quantity <= 0 || orderId == null) {
+            throw new IllegalArgumentException("Quantity must be positive and order ID is required");
+        }
+
         // Find existing inventory or create new one
         InventoryEntity inventory = inventoryRepository.findByProductIdForUpdate(productId)
                 .orElseGet(() -> {
@@ -180,6 +194,10 @@ public class InventoryService {
      */
     public InventoryEntity saveInventory(InventoryEntity inventory) {
         logger.info("Saving inventory record - Product ID: {}", inventory.getProductId());
+        int accountedQuantity = inventory.getAvailableQuantity() + inventory.getReservedQuantity();
+        if (accountedQuantity != inventory.getTotalQuantity()) {
+            throw new IllegalArgumentException("Total quantity must equal available plus reserved quantity");
+        }
         updateInventoryStatus(inventory);
         InventoryEntity savedInventory = inventoryRepository.save(inventory);
         logger.info("Inventory record saved successfully - ID: {}", savedInventory.getId());

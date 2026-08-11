@@ -47,6 +47,9 @@ public class MetricsController {
     @GetMapping("/performance-metrics")
     public ResponseEntity<PerformanceMetricsDTO> getPerformanceMetrics(
             @RequestParam(required = false, defaultValue = "5") Integer minutes) {
+        if (minutes == null || minutes < 1 || minutes > 1440) {
+            return ResponseEntity.badRequest().build();
+        }
         log.info("Received request to get performance metrics for last {} minutes", minutes);
         PerformanceMetricsDTO performanceMetrics = metricsService.getPerformanceMetrics(minutes);
         return ResponseEntity.ok(performanceMetrics);

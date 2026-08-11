@@ -99,8 +99,8 @@ class KafkaOrderFlowIntegrationTest {
         // Arrange
         OrderEntity order = new OrderEntity();
         order.setId(1L);
-        order.setCustomerId("CUST-001");
-        order.setStatus("CREATED");
+        order.setCustomerId(1001L);
+        order.setOrderStatus("CREATED");
         order.setTotalAmount(new BigDecimal("99.99"));
         order.setCreatedAt(LocalDateTime.now());
 
@@ -126,9 +126,9 @@ class KafkaOrderFlowIntegrationTest {
     @Test
     void testOrderToValidationFlow_WithMultipleOrders_ShouldPublishAllEvents() throws InterruptedException {
         // Arrange
-        OrderEntity order1 = createOrder(1L, "CUST-001", new BigDecimal("50.00"));
-        OrderEntity order2 = createOrder(2L, "CUST-002", new BigDecimal("100.00"));
-        OrderEntity order3 = createOrder(3L, "CUST-003", new BigDecimal("150.00"));
+        OrderEntity order1 = createOrder(1L, 1001L, new BigDecimal("50.00"));
+        OrderEntity order2 = createOrder(2L, 1002L, new BigDecimal("100.00"));
+        OrderEntity order3 = createOrder(3L, 1003L, new BigDecimal("150.00"));
 
         // Act
         kafkaProducerService.publishOrderCreatedEvent(order1);
@@ -152,7 +152,7 @@ class KafkaOrderFlowIntegrationTest {
     @Test
     void testKafkaMessageKey_ShouldUseOrderId() throws InterruptedException {
         // Arrange
-        OrderEntity order = createOrder(123L, "CUST-123", new BigDecimal("75.50"));
+        OrderEntity order = createOrder(123L, 1123L, new BigDecimal("75.50"));
 
         // Act
         kafkaProducerService.publishOrderCreatedEvent(order);
@@ -163,11 +163,11 @@ class KafkaOrderFlowIntegrationTest {
         assertThat(record.key()).isEqualTo("123");
     }
 
-    private OrderEntity createOrder(Long id, String customerId, BigDecimal amount) {
+    private OrderEntity createOrder(Long id, Long customerId, BigDecimal amount) {
         OrderEntity order = new OrderEntity();
         order.setId(id);
         order.setCustomerId(customerId);
-        order.setStatus("CREATED");
+        order.setOrderStatus("CREATED");
         order.setTotalAmount(amount);
         order.setCreatedAt(LocalDateTime.now());
         return order;

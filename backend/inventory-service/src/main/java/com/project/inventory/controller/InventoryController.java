@@ -8,12 +8,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/inventory")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "${CORS_ALLOWED_ORIGINS:http://localhost:3000}")
 public class InventoryController {
     
     private static final Logger logger = LoggerFactory.getLogger(InventoryController.class);
@@ -90,7 +91,7 @@ public class InventoryController {
      * @return The saved inventory entity
      */
     @PostMapping
-    public ResponseEntity<InventoryEntity> createInventory(@RequestBody InventoryEntity inventory) {
+    public ResponseEntity<InventoryEntity> createInventory(@Valid @RequestBody InventoryEntity inventory) {
         logger.info("POST /api/inventory - Creating/updating inventory for product: {}", 
                    inventory.getProductId());
         

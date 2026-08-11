@@ -1,12 +1,12 @@
 -- Add additional performance indexes for Inventory Service
 
 -- Partial index for low stock items (frequently monitored)
-CREATE INDEX IF NOT EXISTS idx_inventory_low_stock ON inventory(product_id, quantity, status) 
+CREATE INDEX IF NOT EXISTS idx_inventory_low_stock ON inventory(product_id, available_quantity, status)
 WHERE status IN ('LOW_STOCK', 'OUT_OF_STOCK');
 
 -- Index for product availability queries
-CREATE INDEX IF NOT EXISTS idx_inventory_available ON inventory(status, quantity DESC) 
-WHERE status = 'IN_STOCK' AND quantity > 0;
+CREATE INDEX IF NOT EXISTS idx_inventory_available ON inventory(status, available_quantity DESC)
+WHERE status = 'IN_STOCK' AND available_quantity > 0;
 
 -- Composite index for reservation queries
 CREATE INDEX IF NOT EXISTS idx_inventory_product_updated ON inventory(product_id, updated_at DESC);
@@ -15,7 +15,7 @@ CREATE INDEX IF NOT EXISTS idx_inventory_product_updated ON inventory(product_id
 CREATE INDEX IF NOT EXISTS idx_idempotency_event_processed ON idempotency_records(event_id, processed_at DESC);
 
 -- Index for retry monitoring queries
-CREATE INDEX IF NOT EXISTS idx_retry_status_attempts ON retry_records(retry_status, attempt_count, next_retry_time);
+CREATE INDEX IF NOT EXISTS idx_retry_status_attempts ON retry_records(retry_status, retry_count, next_retry_time);
 
 -- Add comments for documentation
 COMMENT ON INDEX idx_inventory_low_stock IS 'Partial index for low stock monitoring - improves alert query performance';

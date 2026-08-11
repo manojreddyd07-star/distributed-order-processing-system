@@ -185,11 +185,12 @@ services:
       DB_USERNAME: postgres
       DB_PASSWORD: postgres
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000}
     networks:
       - order-processing-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/api/actuator/health"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -213,11 +214,12 @@ services:
       DB_USERNAME: postgres
       DB_PASSWORD: postgres
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000}
     networks:
       - order-processing-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8081/actuator/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8081/api/actuator/health"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -242,6 +244,7 @@ services:
       DB_PASSWORD: postgres
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       SERVER_PORT: 8082
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000}
     networks:
       - order-processing-network
     restart: unless-stopped
@@ -271,6 +274,7 @@ services:
       DB_PASSWORD: postgres
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       SERVER_PORT: 8083
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000}
     networks:
       - order-processing-network
     restart: unless-stopped
@@ -300,6 +304,7 @@ services:
       DB_PASSWORD: postgres
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       SERVER_PORT: 8084
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000}
     networks:
       - order-processing-network
     restart: unless-stopped
@@ -359,14 +364,19 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        REACT_APP_API_URL: ${REACT_APP_API_URL:-http://localhost:8080/api}
+        REACT_APP_VALIDATION_API_URL: ${REACT_APP_VALIDATION_API_URL:-http://localhost:8081/api}
+        REACT_APP_PAYMENT_API_URL: ${REACT_APP_PAYMENT_API_URL:-http://localhost:8082/api}
+        REACT_APP_INVENTORY_API_URL: ${REACT_APP_INVENTORY_API_URL:-http://localhost:8083/api}
+        REACT_APP_FULFILLMENT_API_URL: ${REACT_APP_FULFILLMENT_API_URL:-http://localhost:8084/api}
+        REACT_APP_MONITORING_API_URL: ${REACT_APP_MONITORING_API_URL:-http://localhost:8086/api/monitoring}
     container_name: frontend
     depends_on:
       order-service:
         condition: service_started
     ports:
       - "3000:80"
-    environment:
-      REACT_APP_API_URL: http://localhost:8080
     networks:
       - order-processing-network
     restart: unless-stopped

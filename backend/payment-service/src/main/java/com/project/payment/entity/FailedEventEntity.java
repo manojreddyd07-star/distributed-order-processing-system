@@ -143,15 +143,4 @@ public class FailedEventEntity {
         this.failedAt = failedAt;
     }
     
-    public void setPayload(String payload) {
-        this.payload = payload;
-    }
-    
-    public LocalDateTime getFailedAt() {
-        return failedAt;
-    }
-    
-    public void setFailedAt(LocalDateTime failedAt) {
-        this.failedAt = failedAt;
-    }
 }

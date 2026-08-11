@@ -14,6 +14,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Abstract base class for Event Replay Service functionality
@@ -71,7 +72,7 @@ public abstract class BaseEventReplayService<T, R> {
             Object eventPayload = deserializeEvent(payload, eventType);
             
             // Republish event to the specified Kafka topic
-            kafkaTemplate.send(request.getReplayTopic(), eventPayload);
+            kafkaTemplate.send(request.getReplayTopic(), eventPayload).get(10, TimeUnit.SECONDS);
             
             // Log replay result
             logger.info("Event replayed successfully - EventID: {}, Topic: {}", 
