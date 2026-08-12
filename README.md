@@ -570,16 +570,6 @@ Create a production build as an additional static verification step:
 npm run build
 ```
 
-### PowerShell validation helpers
-
-From the repository root:
-
-```powershell
-.\simple-validation.ps1
-.\validate-deployment.ps1
-.\validation-report.ps1
-```
-
 ## Monitoring
 
 The monitoring service combines three sources of operational information:
@@ -613,7 +603,7 @@ The following are deliberate roadmap items rather than capabilities included in 
 - Move development credentials to Docker secrets or a managed secret store.
 - Replace the single-broker development topology with replicated Kafka infrastructure.
 - Add schema governance with Avro or Protobuf and a schema registry.
-- Add distributed tracing with OpenTelemetry and correlation IDs.
+- Add distributed tracing with OpenTelemetry and correlation IDs
 - Add centralized logs, alerting rules, and prebuilt Grafana dashboards.
 - Add contract tests and fully isolated Testcontainers-based integration tests.
 - Add CI pipelines for builds, tests, dependency scanning, and container scanning.
@@ -621,5 +611,8 @@ The following are deliberate roadmap items rather than capabilities included in 
 - Add retention, archival, and administrative lifecycle controls for retry and DLQ records.
 
 ---
+
+
+
 
 For local development, begin with `docker compose up --build -d`, wait for all health checks to pass, and open <http://localhost:3000>.
