@@ -1,9 +1,9 @@
 # Distributed Order Processing System
 
-An event-driven order-processing platform built as a collection of Spring Boot microservices with Apache Kafka, PostgreSQL, and a React operations dashboard. The project demonstrates asynchronous service coordination, database-per-service persistence, idempotent event handling, retry processing, dead-letter queues, replay tooling, audit history, and operational monitoring.
+A development project for processing orders with Spring Boot services, Kafka, PostgreSQL, and React. It separates order intake, validation, payment, inventory, fulfillment, and monitoring into independently deployed services. Each business service owns its data, and Kafka carries events between workflow stages.
 
 > [!NOTE]
-> This repository is designed for development and demonstration. Review the security, resilience, observability, and infrastructure recommendations in [Future enhancements](#future-enhancements) before using it in production.
+> This repository is intended for local development and demonstration. It does not include authentication, production secret management, or a highly available Kafka setup.
 
 ## Table of contents
 
@@ -94,7 +94,7 @@ flowchart LR
 
 ### Architectural principles
 
-- **Database per service:** each service owns its schema and Flyway migrations.
+- **Database per service:** each service has its own PostgreSQL database. Business services use Flyway; the monitoring service currently lets Hibernate update its schema.
 - **Asynchronous coordination:** Kafka events decouple lifecycle stages.
 - **At-least-once handling:** consumers acknowledge records after processing decisions.
 - **Idempotency:** consumed event IDs are recorded to suppress completed duplicates.
@@ -128,7 +128,7 @@ flowchart LR
 - Order lifecycle audit history.
 - Health, application, throughput, latency, and failure metrics.
 - React dashboard for business and operational data.
-- Independent Flyway migrations and PostgreSQL databases.
+- Separate PostgreSQL databases, with Flyway migrations for the business services.
 - Containerized local environment with health checks and persistent volumes.
 
 ## Project structure
@@ -152,9 +152,6 @@ distributed-order-processing-system/
 |   |   `-- shared/              # Shared hooks, API helpers, utilities, and components
 |   |-- Dockerfile
 |   `-- nginx.conf
-|-- infrastructure/
-|   |-- kafka/                   # Reserved infrastructure directory
-|   `-- postgres/                # Reserved infrastructure directory
 |-- docker-compose.yml           # Complete local stack
 |-- .env.example                 # Deployment-oriented configuration reference
 |-- simple-validation.ps1        # Lightweight validation helper
@@ -195,7 +192,7 @@ The validation, payment, inventory, and fulfillment services also expose retry, 
 Kafka uses JSON values and string keys. Business services use distinct consumer groups, while audit and monitoring use their own groups so they can observe the complete event stream independently.
 
 > [!IMPORTANT]
-> The current order request contains customer and amount data but no product line items. Consequently, end-to-end generation of the product-specific `payment-completed-events` payload requires the upstream order contract to be extended. The topic, downstream inventory consumer, recovery flow, audit handling, and monitoring handling already exist.
+> Orders currently contain a customer ID and total amount, but no product line items. Because the inventory event needs product data, the payment service cannot create `payment-completed-events` from the current order contract. The inventory consumer, recovery flow, audit handling, and monitoring handling for that topic are already present.
 
 ## API overview
 
@@ -388,7 +385,7 @@ sequenceDiagram
    Copy-Item .env.example .env
    ```
 
-   The current Compose file hard-codes its service credentials, ports, URLs, and Kafka settings. Of the values in `.env.example`, Compose currently consumes only `COMPOSE_PROJECT_NAME`; copying the file does not override the other Compose values.
+   Compose reads `CORS_ALLOWED_ORIGINS` and the six `REACT_APP_*` build variables from this file. Database credentials, published ports, and internal Kafka addresses remain development defaults in `docker-compose.yml`.
 
 3. Review the effective development settings in `docker-compose.yml`. Use the variables documented under [Environment variables](#environment-variables) when starting Spring Boot services directly.
 
@@ -520,14 +517,12 @@ Spring Boot reads the variables below when services are launched directly, and C
 
 | Variable | Default | Description |
 |---|---|---|
-| `REACT_APP_API_URL` | `http://localhost:8080/api` | Order API base URL. Some inventory clients also reference this variable, so setting it globally can redirect those clients as well. |
+| `REACT_APP_API_URL` | `http://localhost:8080/api` | Order API base URL. |
 | `REACT_APP_VALIDATION_API_URL` | `http://localhost:8081/api` | Validation API base URL. |
 | `REACT_APP_PAYMENT_API_URL` | `http://localhost:8082/api` | Payment API base URL. |
 | `REACT_APP_INVENTORY_API_URL` | `http://localhost:8083/api` | Inventory API base URL. |
 | `REACT_APP_FULFILLMENT_API_URL` | `http://localhost:8084/api` | Fulfillment API base URL. |
 | `REACT_APP_MONITORING_API_URL` | `http://localhost:8086/api/monitoring` | Monitoring API base URL. |
-
-These values describe the primary API bases, but the current clients do not use the variables consistently: fulfillment record clients fall back to `http://localhost:8084/api/fulfillments`, while fulfillment operational clients append paths to the service-level `/api` base. Domain inventory clients use `REACT_APP_API_URL` rather than `REACT_APP_INVENTORY_API_URL`. Avoid overriding these shared variables without checking every client that consumes them.
 
 React environment variables are embedded at build time. The frontend Dockerfile and Compose configuration pass these variables as build arguments, so set them in the shell or a Compose `.env` file before running `docker compose build frontend`. Changing only the environment of an already-built Nginx container does not alter the compiled bundle.
 
@@ -594,25 +589,13 @@ The React monitoring page displays service health, throughput, latency, and fail
 
 ## Future enhancements
 
-The following are deliberate roadmap items rather than capabilities included in the current implementation:
+The main gaps to address before treating this as a production system are:
 
-- Add order line items and propagate product details through validation and payment events.
-- Publish `payment-completed-events` directly from the payment workflow after successful processing.
-- Introduce an outbox pattern for atomic database writes and Kafka publication.
-- Add authentication and role-based authorization for operational, DLQ, and replay APIs.
-- Move development credentials to Docker secrets or a managed secret store.
-- Replace the single-broker development topology with replicated Kafka infrastructure.
-- Add schema governance with Avro or Protobuf and a schema registry.
-- Add distributed tracing with OpenTelemetry and correlation IDs
-- Add centralized logs, alerting rules, and prebuilt Grafana dashboards.
-- Add contract tests and fully isolated Testcontainers-based integration tests.
-- Add CI pipelines for builds, tests, dependency scanning, and container scanning.
-- Add Kubernetes manifests, autoscaling, TLS, ingress, and production readiness policies.
-- Add retention, archival, and administrative lifecycle controls for retry and DLQ records.
+- Add order line items and carry product data through validation and payment.
+- Publish `payment-completed-events` from the payment workflow.
+- Add authentication and authorization to the operational APIs.
+- Use an outbox or equivalent mechanism for reliable database-to-Kafka publication.
+- Replace the local credentials and single Kafka broker with production-ready infrastructure.
+- Isolate integration tests with Testcontainers and run them in CI.
 
----
-
-
-
-
-For local development, begin with `docker compose up --build -d`, wait for all health checks to pass, and open <http://localhost:3000>.
+For local development, run `docker compose up --build -d`, wait for the health checks to pass, and open <http://localhost:3000>.

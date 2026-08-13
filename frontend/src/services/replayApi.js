@@ -71,5 +71,3 @@ export const getAvailableTopics = () => {
     { value: 'dead-letter-orders', label: 'Dead Letter Queue (dead-letter-orders)' },
   ];
 };
-// Alias for consistency with tests
-export const getReplayHistory = () => Promise.resolve([]);
