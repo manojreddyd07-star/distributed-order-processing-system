@@ -1,65 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import EventHistoryTable from './EventHistoryTable';
+import { getAllAuditEvents } from '../../services/auditApi';
 import './OrderEventTimeline.css';
 
 const OrderEventTimeline = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Mock event data generator
-  const generateMockEvents = () => {
-    const mockEvents = [
-      {
-        eventId: 'evt-' + Math.random().toString(36).substr(2, 9),
-        eventType: 'ORDER_CREATED',
-        orderId: 1001,
-        eventTimestamp: new Date(Date.now() - 5000).toISOString(),
-      },
-      {
-        eventId: 'evt-' + Math.random().toString(36).substr(2, 9),
-        eventType: 'ORDER_CREATED',
-        orderId: 1002,
-        eventTimestamp: new Date(Date.now() - 10000).toISOString(),
-      },
-      {
-        eventId: 'evt-' + Math.random().toString(36).substr(2, 9),
-        eventType: 'ORDER_CREATED',
-        orderId: 1003,
-        eventTimestamp: new Date(Date.now() - 15000).toISOString(),
-      },
-      {
-        eventId: 'evt-' + Math.random().toString(36).substr(2, 9),
-        eventType: 'ORDER_CREATED',
-        orderId: 1004,
-        eventTimestamp: new Date(Date.now() - 20000).toISOString(),
-      },
-      {
-        eventId: 'evt-' + Math.random().toString(36).substr(2, 9),
-        eventType: 'ORDER_CREATED',
-        orderId: 1005,
-        eventTimestamp: new Date(Date.now() - 25000).toISOString(),
-      },
-    ];
-
-    return mockEvents.sort((a, b) => 
-      new Date(b.eventTimestamp) - new Date(a.eventTimestamp)
-    );
-  };
-
-  // Load mock events on component mount
   useEffect(() => {
     loadEvents();
   }, []);
 
-  const loadEvents = () => {
+  const loadEvents = async () => {
     setLoading(true);
-    
-    // Simulate API call delay
-    setTimeout(() => {
-      const mockData = generateMockEvents();
-      setEvents(mockData);
+    try {
+      const response = await getAllAuditEvents(0, 20);
+      setEvents((response.events || []).map(event => ({
+        ...event,
+        eventTimestamp: event.createdAt,
+      })));
+    } catch (error) {
+      console.error('Error loading order events:', error);
+      setEvents([]);
+    } finally {
       setLoading(false);
-    }, 500);
+    }
   };
 
   const handleRefresh = () => {

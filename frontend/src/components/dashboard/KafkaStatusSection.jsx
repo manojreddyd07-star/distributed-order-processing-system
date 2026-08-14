@@ -1,33 +1,14 @@
 import React from 'react';
 import ServiceStatusCard from './ServiceStatusCard';
 
-const KafkaStatusSection = React.memo(() => {
-  const kafkaServices = [
-    {
-      name: 'Zookeeper',
-      status: 'Healthy',
-      port: '2181',
-      version: '7.5.0',
-      uptime: '2h 15m',
-      metrics: {
-        'Connections': '3',
-        'Nodes': '1'
-      }
-    },
-    {
-      name: 'Kafka Broker',
-      status: 'Healthy',
-      port: '9092',
-      version: '7.5.0',
-      uptime: '2h 14m',
-      metrics: {
-        'Topics': '1',
-        'Partitions': '3',
-        'Messages/sec': '125',
-        'Throughput': '2.5 MB/s'
-      }
-    }
-  ];
+const KafkaStatusSection = React.memo(({ healthData }) => {
+  const kafkaServices = healthData?.kafkaHealth ? [{
+    name: healthData.kafkaHealth.serviceName,
+    status: healthData.kafkaHealth.status,
+    metrics: healthData.kafkaHealth.description
+      ? { Status: healthData.kafkaHealth.description }
+      : undefined,
+  }] : [{ name: 'Apache Kafka', status: 'UNKNOWN' }];
 
   return (
     <div className="dashboard-section">

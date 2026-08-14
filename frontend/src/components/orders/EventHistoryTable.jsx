@@ -38,8 +38,8 @@ const EventHistoryTable = ({ events, loading }) => {
             <tr key={event.eventId}>
               <td className="event-id">{event.eventId}</td>
               <td className="event-type">
-                <span className={`event-type-badge ${event.eventType.toLowerCase()}`}>
-                  {event.eventType}
+                <span className={`event-type-badge ${(event.eventType || 'unknown').toLowerCase()}`}>
+                  {event.eventType || 'UNKNOWN'}
                 </span>
               </td>
               <td className="order-id">{event.orderId}</td>

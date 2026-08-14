@@ -15,6 +15,15 @@ const ReplayPage = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
 
   const availableTopics = getAvailableTopics();
+  const topicByService = {
+    'validation-service': 'order-created',
+    'payment-service': 'order-validated',
+    'inventory-service': 'payment-completed-events',
+    'fulfillment-service': 'inventory-reserved',
+  };
+  const supportedTopics = serviceName
+    ? availableTopics.filter(topic => topic.value === topicByService[serviceName])
+    : availableTopics;
 
   useEffect(() => {
     fetchFailedEvents();
@@ -46,6 +55,14 @@ const ReplayPage = () => {
       setEventId('');
       setEventType('');
       setServiceName('');
+      setReplayTopic('');
+    }
+  };
+
+  const handleServiceChange = (e) => {
+    const nextService = e.target.value;
+    setServiceName(nextService);
+    if (replayTopic !== topicByService[nextService]) {
       setReplayTopic('');
     }
   };
@@ -193,7 +210,7 @@ const ReplayPage = () => {
               <select
                 id="service-name"
                 value={serviceName}
-                onChange={(e) => setServiceName(e.target.value)}
+                onChange={handleServiceChange}
                 className="form-input"
                 disabled={loading}
                 required
@@ -219,7 +236,7 @@ const ReplayPage = () => {
                 required
               >
                 <option value="">-- Select replay topic --</option>
-                {availableTopics.map((topic) => (
+                {supportedTopics.map((topic) => (
                   <option key={topic.value} value={topic.value}>
                     {topic.label}
                   </option>

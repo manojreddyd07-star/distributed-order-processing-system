@@ -5,9 +5,11 @@ const ValidationStatusBadge = ({ status }) => {
   const getStatusClass = () => {
     switch (status?.toUpperCase()) {
       case 'VALIDATED':
+      case 'VALID':
       case 'SUCCESS':
         return 'status-badge status-success';
       case 'FAILED':
+      case 'INVALID':
       case 'VALIDATION_FAILED':
         return 'status-badge status-failed';
       case 'PENDING':

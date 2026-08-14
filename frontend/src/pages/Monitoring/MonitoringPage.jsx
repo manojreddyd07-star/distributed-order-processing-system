@@ -7,7 +7,6 @@ import FailureMetricsCard from '../../components/monitoring/FailureMetricsCard';
 import { 
   getSystemMetrics, 
   getEventMetrics, 
-  getServiceHealth,
   getPerformanceMetrics 
 } from '../../services/monitoringApi';
 import './MonitoringPage.css';
@@ -26,16 +25,15 @@ const MonitoringPage = () => {
   const fetchData = async () => {
     try {
       setError(null);
-      const [health, metrics, serviceHealth, performance] = await Promise.all([
+      const [health, metrics, performance] = await Promise.all([
         getSystemMetrics(),
         getEventMetrics(),
-        getServiceHealth(),
         getPerformanceMetrics(timeWindow),
       ]);
       
       setHealthData(health);
       setMetricsData(metrics);
-      setServiceHealthData(serviceHealth);
+      setServiceHealthData(health);
       setPerformanceData(performance);
       setLastUpdated(new Date());
       setLoading(false);
@@ -139,7 +137,7 @@ const MonitoringPage = () => {
       {healthData && (
         <div className="health-section">
           <HealthGrid
-            services={healthData.servicesHealth}
+            services={serviceHealthData?.servicesHealth}
             databaseHealth={healthData.databaseHealth}
             kafkaHealth={healthData.kafkaHealth}
           />

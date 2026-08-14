@@ -25,6 +25,8 @@ const CreateOrderForm = () => {
     // Required field validation for Customer ID
     if (!customerId || customerId.trim() === '') {
       newErrors.customerId = 'Customer ID is required';
+    } else if (!Number.isInteger(Number(customerId)) || Number(customerId) <= 0) {
+      newErrors.customerId = 'Customer ID must be a positive whole number';
     }
     
     // Required field validation for Total Amount
@@ -57,7 +59,7 @@ const CreateOrderForm = () => {
     
     try {
       await createOrder({
-        customerId: customerId.trim(),
+        customerId: Number(customerId),
         totalAmount: Number(totalAmount),
       });
       
@@ -93,6 +95,8 @@ const CreateOrderForm = () => {
           </label>
           <input
             type="number"
+            min="1"
+            step="1"
             id="customerId"
             value={customerId}
             onChange={(e) => setCustomerId(e.target.value)}

@@ -2,12 +2,14 @@ import React from 'react';
 import './ServiceStatusCard.css';
 
 const ServiceStatusCard = ({ service }) => {
-  const { name, status, port, version, uptime, metrics } = service;
+  const { name, status = 'UNKNOWN', port, version, uptime, metrics } = service;
 
   const getStatusClass = (status) => {
     switch (status.toLowerCase()) {
       case 'healthy':
+      case 'up':
         return 'healthy';
+      case 'unhealthy':
       case 'degraded':
         return 'degraded';
       case 'down':

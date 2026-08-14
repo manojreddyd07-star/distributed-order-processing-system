@@ -20,51 +20,8 @@ const PaymentTable = ({ refreshTrigger }) => {
       const data = await getPaymentHistory();
       setPayments(data);
     } catch (err) {
-      // Use mock data if API fails
-      console.warn('API failed, using mock data:', err);
-      const mockData = [
-        {
-          id: 1,
-          paymentId: 'PMT-001',
-          orderId: 'ORD-001',
-          amount: 299.99,
-          status: 'COMPLETED',
-          createdAt: new Date().toISOString()
-        },
-        {
-          id: 2,
-          paymentId: 'PMT-002',
-          orderId: 'ORD-002',
-          amount: 149.50,
-          status: 'PENDING',
-          createdAt: new Date(Date.now() - 3600000).toISOString()
-        },
-        {
-          id: 3,
-          paymentId: 'PMT-003',
-          orderId: 'ORD-003',
-          amount: 599.00,
-          status: 'FAILED',
-          createdAt: new Date(Date.now() - 7200000).toISOString()
-        },
-        {
-          id: 4,
-          paymentId: 'PMT-004',
-          orderId: 'ORD-004',
-          amount: 89.99,
-          status: 'COMPLETED',
-          createdAt: new Date(Date.now() - 10800000).toISOString()
-        },
-        {
-          id: 5,
-          paymentId: 'PMT-005',
-          orderId: 'ORD-005',
-          amount: 1250.00,
-          status: 'PENDING',
-          createdAt: new Date(Date.now() - 14400000).toISOString()
-        }
-      ];
-      setPayments(mockData);
+      setError(err.message || 'Failed to load payments');
+      console.error('Error fetching payments:', err);
     } finally {
       setIsLoading(false);
     }
@@ -149,7 +106,7 @@ const PaymentTable = ({ refreshTrigger }) => {
               <td className="order-id">{payment.orderId}</td>
               <td className="amount">{formatAmount(payment.amount)}</td>
               <td className="status">
-                <PaymentStatusBadge status={payment.status} />
+                <PaymentStatusBadge status={payment.paymentStatus} />
               </td>
               <td className="created-at">{formatDateTime(payment.createdAt)}</td>
             </tr>
