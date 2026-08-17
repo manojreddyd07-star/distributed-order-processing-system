@@ -37,7 +37,9 @@ export const fetchWithErrorHandling = async (url, options = {}) => {
  * Build API URL with base URL
  */
 export const buildApiUrl = (baseUrl, endpoint) => {
-  return `${baseUrl}${endpoint}`;
+  const normalizedBaseUrl = baseUrl.replace(/\/+$/, '');
+  const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  return `${normalizedBaseUrl}${normalizedEndpoint}`;
 };
 
 /**
