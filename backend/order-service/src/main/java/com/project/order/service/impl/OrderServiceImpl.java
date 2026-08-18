@@ -5,6 +5,7 @@ import com.project.common.dto.OrderResponse;
 import com.project.common.dto.OrderSearchRequest;
 import com.project.common.dto.PagedResponse;
 import com.project.order.entity.OrderEntity;
+import com.project.order.exception.ResourceNotFoundException;
 import com.project.order.repository.OrderRepository;
 import com.project.order.repository.OrderSpecification;
 import com.project.order.service.KafkaProducerService;
@@ -62,7 +63,7 @@ public class OrderServiceImpl implements OrderService {
     public OrderResponse getOrderById(Long orderId) {
         // Fetch order using OrderRepository
         OrderEntity orderEntity = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found with id: " + orderId));
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
         
         return mapToOrderResponse(orderEntity);
     }
@@ -88,6 +89,10 @@ public class OrderServiceImpl implements OrderService {
         }
         if (!ALLOWED_SORT_FIELDS.contains(searchRequest.getSortBy())) {
             throw new IllegalArgumentException("Unsupported sort field: " + searchRequest.getSortBy());
+        }
+        if (!"ASC".equalsIgnoreCase(searchRequest.getSortDirection())
+                && !"DESC".equalsIgnoreCase(searchRequest.getSortDirection())) {
+            throw new IllegalArgumentException("Sort direction must be ASC or DESC");
         }
         if (searchRequest.getStartDate() != null && searchRequest.getEndDate() != null
                 && searchRequest.getStartDate().isAfter(searchRequest.getEndDate())) {
