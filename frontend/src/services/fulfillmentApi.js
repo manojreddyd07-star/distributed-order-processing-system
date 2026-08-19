@@ -126,7 +126,7 @@ export const getAuditHistoryByFulfillmentId = async (fulfillmentId) => {
   }
 };
 
-export default {
+const fulfillmentApi = {
   getAllFulfillments,
   getFulfillmentById,
   getFulfillmentsByOrderId,
@@ -135,3 +135,5 @@ export default {
   getFulfillmentsByStatus,
   getAuditHistoryByFulfillmentId
 };
+
+export default fulfillmentApi;

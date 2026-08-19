@@ -52,12 +52,13 @@ export const getServiceHealth = async () => {
   }
 };
 
-export default {
+const monitoringApi = {
   getHealthMetrics,
   getApplicationMetrics,
   getPerformanceMetrics,
   getServiceHealth,
 };
+export default monitoringApi;
 // Aliases for consistency with tests
 export const getSystemMetrics = getHealthMetrics;
 export const getEventMetrics = getApplicationMetrics;

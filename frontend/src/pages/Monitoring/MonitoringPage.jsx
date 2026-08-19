@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import MetricsCard from '../../components/monitoring/MetricsCard';
 import HealthGrid from '../../components/monitoring/HealthGrid';
 import ThroughputChart from '../../components/monitoring/ThroughputChart';
@@ -22,7 +22,7 @@ const MonitoringPage = () => {
   const [lastUpdated, setLastUpdated] = useState(null);
   const [timeWindow, setTimeWindow] = useState(5); // Default 5 minutes
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setError(null);
       const [health, metrics, performance] = await Promise.all([
@@ -42,11 +42,11 @@ const MonitoringPage = () => {
       setError('Failed to fetch monitoring data. Please ensure the monitoring service is running.');
       setLoading(false);
     }
-  };
+  }, [timeWindow]);
 
   useEffect(() => {
     fetchData();
-  }, [timeWindow]);
+  }, [fetchData]);
 
   useEffect(() => {
     if (autoRefresh) {
@@ -56,7 +56,7 @@ const MonitoringPage = () => {
 
       return () => clearInterval(interval);
     }
-  }, [autoRefresh, timeWindow]);
+  }, [autoRefresh, fetchData]);
 
   const handleRefresh = () => {
     setLoading(true);

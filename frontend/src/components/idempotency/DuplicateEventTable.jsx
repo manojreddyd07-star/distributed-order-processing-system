@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import ProcessingStatus from './ProcessingStatus';
 import { getAllIdempotencyRecords } from '../../services/idempotencyApi';
 import './DuplicateEventTable.css';
@@ -8,11 +8,7 @@ const DuplicateEventTable = ({ statusFilter }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    fetchIdempotencyRecords();
-  }, [statusFilter]);
-
-  const fetchIdempotencyRecords = async () => {
+  const fetchIdempotencyRecords = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     
@@ -35,7 +31,11 @@ const DuplicateEventTable = ({ statusFilter }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [statusFilter]);
+
+  useEffect(() => {
+    fetchIdempotencyRecords();
+  }, [fetchIdempotencyRecords]);
 
   const formatDateTime = (dateString) => {
     const date = new Date(dateString);

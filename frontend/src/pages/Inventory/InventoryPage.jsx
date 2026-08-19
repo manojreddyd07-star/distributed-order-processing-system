@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import InventoryTable from '../../components/inventory/InventoryTable';
 import { getAllInventory } from '../../shared/api/inventoryApi';
 import './InventoryPage.css';
@@ -11,13 +11,13 @@ const InventoryPage = () => {
   const [notification, setNotification] = useState(null);
 
   // Show notification
-  const showNotification = (message, type = 'success') => {
+  const showNotification = useCallback((message, type = 'success') => {
     setNotification({ message, type });
     setTimeout(() => setNotification(null), 4000);
-  };
+  }, []);
 
   // Fetch inventory data from API
-  const fetchInventory = async () => {
+  const fetchInventory = useCallback(async () => {
     setLoading(true);
     setError(null);
     
@@ -33,7 +33,7 @@ const InventoryPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [showNotification]);
 
   // Handle manual refresh
   const handleRefresh = async () => {
@@ -49,7 +49,7 @@ const InventoryPage = () => {
 
   useEffect(() => {
     fetchInventory();
-  }, []);
+  }, [fetchInventory]);
 
   // Filter inventory by status
   const filteredInventory = selectedStatus === 'ALL' 

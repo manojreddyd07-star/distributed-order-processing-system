@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import AuditTimeline from '../../components/audit/AuditTimeline';
 import AuditFilters from '../../components/audit/AuditFilters';
 import { getAllAuditEvents, getFilteredAuditEvents } from '../../services/auditApi';
@@ -22,11 +22,7 @@ const AuditPage = () => {
   });
   const [pageSize] = useState(20);
 
-  useEffect(() => {
-    loadAuditEvents();
-  }, [filters, pagination.currentPage]);
-
-  const loadAuditEvents = async () => {
+  const loadAuditEvents = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -58,7 +54,11 @@ const AuditPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters, pagination.currentPage, pageSize]);
+
+  useEffect(() => {
+    loadAuditEvents();
+  }, [loadAuditEvents]);
 
   const handleFilterChange = (newFilters) => {
     setFilters(newFilters);
